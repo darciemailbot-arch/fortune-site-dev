@@ -35,6 +35,12 @@
     --vizFloor:0.14;
   }
   body[data-theme='dark']{--vizFloor:0.08}
+  body:not([data-theme='dark']){
+    --viz-strong:var(--text-primary);
+    --viz-medium:var(--text-primary);
+    --viz-subtle:var(--text-primary);
+    --viz-faint:var(--text-primary);
+  }
   html,body{height:100%;overflow:hidden}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased;transition:background-color 1s ease,color 1s ease}
   body.palette-transition{transition:background-color .8s ease,color .8s ease}
@@ -213,6 +219,7 @@
 
   /* Stars (diamond variation, restrained) */
   .stars{position:absolute;inset:0;pointer-events:none;opacity:0;animation:stars-in 1.2s ease forwards;color:var(--ink)}
+  body:not([data-theme='dark']) .stars{color:var(--red)}
   .star{
     position:absolute;
     background:currentColor;
@@ -352,7 +359,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.12";
+const BUILD = "dev-0.2.13";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
