@@ -216,7 +216,7 @@
     opacity:1;
     transform:translate(var(--sx,0),var(--sy,0)) rotate(var(--sa,22deg));
     transform-origin:left center;
-    animation:star-shoot-motion var(--sdur,2200ms) ease-in-out forwards;
+    will-change:transform,opacity;
   }
   .shooting-star-tail{
     position:absolute;
@@ -247,12 +247,6 @@
   }
   @keyframes stars-in{from{opacity:0}to{opacity:1}}
   @keyframes star-breathe{from{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--so,.08)))}to{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--sp,.2)))}}
-  @keyframes star-shoot-motion{
-    0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa))}
-    40%{transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa))}
-    80%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa))}
-    100%{transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa))}
-  }
   @keyframes star-head-life{
     0%{opacity:0}
     10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.18 * var(--vizIntensity))))}
@@ -341,7 +335,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.20";
+const BUILD = "dev-0.1.21";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -988,13 +982,13 @@ function spawnStars() {
   const target=isPhone ? (8+Math.floor(Math.random()*7)) : (10+Math.floor(Math.random()*7)); // 8-14 mobile, 10-16 larger
   const total=Math.min(adjustedVisualMax(V.stars.max),target);
   const isDark=document.body.getAttribute('data-theme')==='dark';
+  const clampSize=(v,a,b)=>Math.max(a,Math.min(b,v));
 
   for(let i=0;i<total;i++){
     const s=document.createElement('div');
     s.className='star';
     s.spawnTime=performance.now();
-    const r=Math.random();
-    const size=r<0.68?2:(r<0.95?3:4); // mostly 2-3px, rare 4px
+    const size=clampSize((0.6+Math.random()*0.9)*5,2.8,6.0);
     let x,y,tries=0;
     do{
       x=Math.random()*(vw-size);
@@ -1068,7 +1062,7 @@ function startStars() {
     shot.style.setProperty('--spawnFade','0');
 
     const len=50+Math.random()*60;
-    let dur=1800+Math.random()*1200;
+    const dur=1100+Math.random()*600;
     const linger=300+Math.random()*300;
     const ang=16+Math.random()*18;
     const dx=80+Math.random()*120;
@@ -1079,40 +1073,43 @@ function startStars() {
       sy=Math.random()*(vh*.55);
       tries++;
     }while(tries<20 && inSafe(sx+dx*.5,sy+dy*.5,32));
-    const prevShot=layer._shotMotion || {sx,sy,dx,dy,ang};
-    const smoothSX=smoothStep(prevShot.sx,sx,0.06);
-    const smoothSY=smoothStep(prevShot.sy,sy,0.06);
-    const smoothDX=smoothStep(prevShot.dx,dx,0.06);
-    const smoothDY=smoothStep(prevShot.dy,dy,0.06);
-    const smoothAng=smoothStep(prevShot.ang,ang,0.06);
-    const shotFrames=Math.max(1,dur/16.667);
-    const shotVX=smoothDX/shotFrames;
-    const shotVY=smoothDY/shotFrames;
-    const [governedShotVX,governedShotVY]=clampMagnitude(shotVX,shotVY,TRANQUIL_SPEED);
-    if(governedShotVX!==shotVX || governedShotVY!==shotVY){
-      const baseMag=Math.hypot(shotVX,shotVY)||1;
-      const governedMag=Math.hypot(governedShotVX,governedShotVY)||TRANQUIL_SPEED;
-      dur*=baseMag/governedMag;
-    }
-    layer._shotMotion={sx:smoothSX,sy:smoothSY,dx:smoothDX,dy:smoothDY,ang:smoothAng};
+    const x0=sx, y0=sy;
+    const x1=sx+dx, y1=sy+dy;
+    const startTime=performance.now();
+    const lerp=(a,b,u)=>a+(b-a)*u;
 
     shot.style.setProperty('--sw',len.toFixed(1)+'px');
-    shot.style.setProperty('--sx',smoothSX.toFixed(1)+'px');
-    shot.style.setProperty('--sy',smoothSY.toFixed(1)+'px');
-    shot.style.setProperty('--dx',smoothDX.toFixed(1)+'px');
-    shot.style.setProperty('--dy',smoothDY.toFixed(1)+'px');
-    shot.style.setProperty('--sa',smoothAng.toFixed(1)+'deg');
+    shot.style.setProperty('--sx',x0.toFixed(1)+'px');
+    shot.style.setProperty('--sy',y0.toFixed(1)+'px');
+    shot.style.setProperty('--sa',ang.toFixed(1)+'deg');
     shot.style.setProperty('--sdur',dur.toFixed(0)+'ms');
     shot.style.setProperty('--slinger',linger.toFixed(0)+'ms');
     shot.innerHTML='<span class="shooting-star-tail"></span><span class="shooting-star-head"></span>';
     layer.appendChild(shot);
     applySpawnFade(shot);
 
-    const tRm=setTimeout(()=>{
-      if(shot.isConnected) shot.remove();
+    const finish=()=>{
+      if(shot._raf) cancelAnimationFrame(shot._raf);
       shootingActive=false;
-    },dur+linger+500);
-    visTimers.push(tRm);
+    };
+    shot._onRemove=finish;
+    const tick=(now)=>{
+      if(!shot.isConnected) return;
+      const p=Math.max(0,Math.min(1,(now-startTime)/dur));
+      const x=lerp(x0,x1,p);
+      const y=lerp(y0,y1,p);
+      shot.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${ang.toFixed(1)}deg)`;
+      if(p>=1){
+        const tRm=setTimeout(()=>{
+          if(shot.isConnected) shot.remove();
+          finish();
+        },linger+120);
+        visTimers.push(tRm);
+        return;
+      }
+      shot._raf=requestAnimationFrame(tick);
+    };
+    shot._raf=requestAnimationFrame(tick);
   };
 
   const scheduleShootingStar=()=>{
