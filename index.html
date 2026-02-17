@@ -359,7 +359,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.15";
+const BUILD = "dev-0.2.16";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -906,6 +906,17 @@ function getRectsForSelectors(w,h,selectors,pad=22){
 function getProtectedUiRects(w,h,pad=22){
   const selectors=['#fortune','#nums','#btn','.lang','#themeToggle'];
   return getRectsForSelectors(w,h,selectors,pad);
+}
+
+function getBrushProtectedRects(w,h){
+  const out=[];
+  // Keep text readable while preserving lower-wave visibility.
+  out.push(...getRectsForSelectors(w,h,['#fortune','#nums'],26));
+  // Stronger buffer around the fortune button so waves never pass through it.
+  out.push(...getRectsForSelectors(w,h,['#btn'],74));
+  out.push(...getRectsForSelectors(w,h,['.lang','#themeToggle'],20));
+  out.push(...getRectsForSelectors(w,h,['.signoff'],14));
+  return out;
 }
 
 function getSandProtectedRects(w,h,pad=24){
@@ -2643,7 +2654,7 @@ function spawnBrush() {
   const lineCount=3+Math.floor(Math.random()*5); // 3-7 lines
   const dir=Math.random()>.5 ? 1 : -1;
   let raf=0, lastNow=performance.now();
-  let safeRects=getProtectedUiRects(w,h,24);
+  let safeRects=getBrushProtectedRects(w,h);
 
   const waves=Array.from({length:lineCount}).map((_,i)=>{
     const t=lineCount===1?0.5:(i/(lineCount-1));
@@ -2672,7 +2683,7 @@ function spawnBrush() {
     rect=canvas.getBoundingClientRect();
     w=Math.max(1,rect.width);
     h=Math.max(1,rect.height);
-    safeRects=getProtectedUiRects(w,h,24);
+    safeRects=getBrushProtectedRects(w,h);
   };
 
   const beginReadZoneClip=()=>{
@@ -2757,12 +2768,14 @@ function spawnBrush() {
 
   const onResize=()=>refreshLayout();
   const onOrientation=()=>refreshLayout();
-  const onFortune=()=>{ safeRects=getProtectedUiRects(w,h,24); };
-  const onTheme=()=>{ safeRects=getProtectedUiRects(w,h,24); };
+  const onFortune=()=>{ safeRects=getBrushProtectedRects(w,h); };
+  const onTheme=()=>{ safeRects=getBrushProtectedRects(w,h); };
+  const onLanguage=()=>{ safeRects=getBrushProtectedRects(w,h); };
   window.addEventListener('resize',onResize,{passive:true});
   window.addEventListener('orientationchange',onOrientation,{passive:true});
   window.addEventListener('fortune-rendered',onFortune);
   window.addEventListener('theme-changed',onTheme);
+  window.addEventListener('language-changed',onLanguage);
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(()=>{ if(activeVisual==='brush') onFortune(); }).catch(()=>{});
   }
@@ -2773,6 +2786,7 @@ function spawnBrush() {
     window.removeEventListener('orientationchange',onOrientation);
     window.removeEventListener('fortune-rendered',onFortune);
     window.removeEventListener('theme-changed',onTheme);
+    window.removeEventListener('language-changed',onLanguage);
   };
 
   raf=requestAnimationFrame(draw);
