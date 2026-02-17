@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.01";
+const BUILD = "dev-0.2.02";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v3';
@@ -765,13 +765,28 @@ function schedulePostSeedVisualSwitch() {
   visTimers.push(postSeedVisualTimer);
 }
 
+function startActiveVisual() {
+  if(activeVisual==='koi') { spawnKoi(); startKoi(); }
+  else if(activeVisual==='ink') { spawnInk(); startInk(); }
+  else if(activeVisual==='blossom') { spawnBlossom(); startBlossom(); }
+  else if(activeVisual==='feather') { spawnFeather(); startFeathers(); }
+  else if(activeVisual==='birds') { spawnBird(); startBirds(); }
+  else if(activeVisual==='stars') { startStars(); }
+  else if(activeVisual==='sand') { startSandGarden(); }
+  else if(activeVisual==='ripple') { startRippleSystem(); }
+  else if(activeVisual==='serpent') { spawnSerpent(); startSerpent(); }
+  else if(activeVisual==='bee') { startBees(); }
+  else if(activeVisual==='firefly') { startFireflies(); }
+  else { spawnBrush(); startBrush(); }
+}
+
 function spawnQuickVisualSeed() {
   clearVisuals();
-  activeVisual='stars';
+  const launchTypes=['koi','ink','blossom','feather','brush','birds','serpent','bee','firefly','sand','ripple'];
+  activeVisual=launchTypes[Math.floor(Math.random()*launchTypes.length)];
   window.__BOOTSTRAP_VIZ_BOOST = Math.max(1.25, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
   setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },700);
-  startStars();
-  schedulePostSeedVisualSwitch();
+  startActiveVisual();
 }
 function restartVisualRuntime(delay=0, forcePick=false) {
   const run=()=>{
@@ -1888,28 +1903,17 @@ function pickVisual() {
   clearVisuals();
   if(bootstrapFirstVisualPending){
     bootstrapFirstVisualPending=false;
-    activeVisual='stars';
+    const launchTypes=['koi','ink','blossom','feather','brush','birds','serpent','bee','firefly','sand','ripple'];
+    activeVisual=launchTypes[Math.floor(Math.random()*launchTypes.length)];
     window.__BOOTSTRAP_VIZ_BOOST = 1.35;
     setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },800);
-    startStars();
-    schedulePostSeedVisualSwitch();
+    startActiveVisual();
     return
   }
   const types=['koi','ink','blossom','feather','brush','stars','birds','serpent','bee','firefly','sand','ripple'];
   const choices=activeVisual ? types.filter(t=>t!==activeVisual) : types.slice();
   activeVisual=choices[Math.floor(Math.random()*choices.length)];
-  if(activeVisual==='koi') { spawnKoi(); startKoi(); }
-  else if(activeVisual==='ink') { spawnInk(); startInk(); }
-  else if(activeVisual==='blossom') { spawnBlossom(); startBlossom(); }
-  else if(activeVisual==='feather') { spawnFeather(); startFeathers(); }
-  else if(activeVisual==='birds') { spawnBird(); startBirds(); }
-  else if(activeVisual==='stars') { startStars(); }
-  else if(activeVisual==='sand') { startSandGarden(); }
-  else if(activeVisual==='ripple') { startRippleSystem(); }
-  else if(activeVisual==='serpent') { spawnSerpent(); startSerpent(); }
-  else if(activeVisual==='bee') { startBees(); }
-  else if(activeVisual==='firefly') { startFireflies(); }
-  else { spawnBrush(); startBrush(); }
+  startActiveVisual();
 }
 
 // ======== SERPENT PATH ========
