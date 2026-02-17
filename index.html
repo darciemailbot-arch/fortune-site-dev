@@ -352,11 +352,12 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.15";
+const BUILD = "dev-0.1.16";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
 let vizOpacityFloor = 0.14;
+if(typeof window.__BOOTSTRAP_VIZ_BOOST !== 'number') window.__BOOTSTRAP_VIZ_BOOST = 1;
 
 function updateVizIntensityCache(theme) {
   const cs = getComputedStyle(document.documentElement);
@@ -390,6 +391,7 @@ let activeVisual = null;
 let visTimers = [];
 let cookiePosLocked = false;
 let lastSandAngleIdx = -1;
+let bootstrapFirstVisualPending = true;
 
 // ============ DEVICE CAPABILITY TIER SYSTEM ============
 // Progressive enhancement — no user-agent sniffing. Uses feature queries only.
@@ -507,10 +509,12 @@ const scaledInterval = n => Math.max([900, 650, 350][TIER], Math.round(n / DENSI
 // without altering animation behavior.
 function vizOpacity(base, allowZero=false) {
   if (allowZero && base <= 0) return 0;
-  return Math.min(1, Math.max(vizOpacityFloor, base * vizIntensityNum));
+  const boost=Math.max(1, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
+  return Math.min(1, Math.max(vizOpacityFloor, base * vizIntensityNum * boost));
 }
 function vizAlpha(base) {
-  return Math.min(1, Math.max(0, base * vizIntensityNum));
+  const boost=Math.max(1, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
+  return Math.min(1, Math.max(0, base * vizIntensityNum * boost));
 }
 function vizWidth(base) {
   return Math.max(0, base * vizIntensityNum);
@@ -572,6 +576,37 @@ function startDensityGovernor() {
   };
   densityRAF = requestAnimationFrame(tick);
 }
+function setupCanvasAll() {
+  const canvases=VIS.querySelectorAll('canvas');
+  canvases.forEach(c=>{
+    try { setupCanvas(c); } catch(_) {}
+  });
+  window.dispatchEvent(new Event('fortune-rendered'));
+}
+function spawnQuickVisualSeed() {
+  clearVisuals();
+  activeVisual='stars';
+  window.__BOOTSTRAP_VIZ_BOOST = Math.max(1.25, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
+  setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },700);
+  startStars();
+}
+function restartVisualRuntime(delay=0, forcePick=false) {
+  const run=()=>{
+    if(document.hidden) return;
+    lastFrameTime=performance.now();
+    setupCanvasAll();
+    setTimeout(setupCanvasAll,150);
+    if(forcePick && !isTransitioning){
+      spawnQuickVisualSeed();
+      return;
+    }
+    if(!VIS.children.length && !isTransitioning && typeof pickVisual === 'function'){
+      pickVisual();
+    }
+  };
+  if(delay>0) setTimeout(run,delay);
+  else run();
+}
 
 // ============ VISIBILITY / LIFECYCLE CLEANUP ============
 // Works across Safari, Chrome, Samsung Internet, Firefox
@@ -587,8 +622,7 @@ document.addEventListener('visibilitychange', () => {
     // Full visual teardown
     clearVisuals();
   } else {
-    // Page resumed — restart visuals so the page feels alive
-    setTimeout(() => { if (!isTransitioning && typeof pickVisual === 'function') pickVisual(); }, 400);
+    restartVisualRuntime(120,true);
   }
 });
 
@@ -603,10 +637,9 @@ if ('onfreeze' in document) {
 // Samsung Internet and some Android browsers fire pageshow on BFCache restore.
 // Re-trigger visual on return so the page doesn't look dead.
 window.addEventListener('pageshow', (e) => {
-  if (e.persisted && activeVisual) {
-    // Page restored from BFCache — restart current visual
+  if (e.persisted) {
     clearVisuals();
-    setTimeout(() => { if (typeof pickVisual === 'function') pickVisual(); }, 300);
+    restartVisualRuntime(80,true);
   }
 });
 
@@ -1551,6 +1584,14 @@ function startRippleSystem() {
 
 function pickVisual() {
   clearVisuals();
+  if(bootstrapFirstVisualPending){
+    bootstrapFirstVisualPending=false;
+    activeVisual='stars';
+    window.__BOOTSTRAP_VIZ_BOOST = 1.35;
+    setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },800);
+    startStars();
+    return;
+  }
   const types=['koi','ink','blossom','feather','brush','stars','birds','serpent','bee','firefly','sand','ripple'];
   const choices=activeVisual ? types.filter(t=>t!==activeVisual) : types.slice();
   activeVisual=choices[Math.floor(Math.random()*choices.length)];
@@ -2399,7 +2440,10 @@ function reveal(e){
   }, OUT_MS + SWAP_GAP_MS);
 }
 
-window.addEventListener('load',()=>{
+let appInitialized=false;
+function initApp(){
+  if(appInitialized) return;
+  appInitialized=true;
   startDensityGovernor();
   initTheme();
   const buildEl=document.createElement("div");
@@ -2410,9 +2454,20 @@ window.addEventListener('load',()=>{
   if(toggle) toggle.addEventListener('click',toggleTheme);
   setLang(resolveDeviceLang(),false);
   setTimeout(reveal,180);
+  setTimeout(()=>{
+    if(!document.hidden && (!activeVisual || !VIS.children.length) && typeof pickVisual==='function'){
+      window.__BOOTSTRAP_VIZ_BOOST = 1.35;
+      setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },800);
+      pickVisual();
+    }
+  },420);
   setTimeout(()=>positionCookie(true),220);
+  setupCanvasAll();
+  setTimeout(setupCanvasAll,150);
   setInterval(()=>reveal({auto:true}),120000);
-});
+}
+document.addEventListener('DOMContentLoaded',initApp,{once:true});
+window.addEventListener('load',initApp,{once:true});
 
 window.addEventListener('resize',()=>positionCookie(true));
 </script>
