@@ -78,7 +78,7 @@
   .fortune.v{opacity:1;transform:translateY(0)}
   .fortune.cjk{font-family:'Noto Sans SC','Noto Sans JP','Noto Sans KR',sans-serif;font-weight:300;font-size:1.35rem;line-height:1.8}
   .prompt{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:300;font-style:italic;color:var(--red)}
-  .nums{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:600;color:var(--red);letter-spacing:.12em;margin-top:14px;opacity:0;transition:opacity 1.34s ease .2s}
+  .nums{font-family:'Caveat',cursive;font-size:calc(1.25rem - 1pt);font-weight:600;color:var(--red);letter-spacing:.12em;margin-top:14px;opacity:0;transition:opacity 1.34s ease .2s}
   .nums.v{opacity:1}
 
   /* Fortune cookie button */
@@ -361,7 +361,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.29";
+const BUILD = "dev-0.2.30";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v7';
