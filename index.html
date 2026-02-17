@@ -109,7 +109,7 @@
   }
   .bird .wl{animation:wing-l var(--fs) ease-in-out infinite}
   .bird .wr{animation:wing-r var(--fs) ease-in-out infinite}
-  @keyframes bf{0%{opacity:0;transform:translateX(0) translateY(0)}3%{opacity:var(--bop1,.12)}50%{opacity:var(--bop2,.08);transform:translateX(calc(var(--tr)*.5)) translateY(var(--dr))}97%{opacity:var(--bop3,.04)}100%{opacity:0;transform:translateX(var(--tr)) translateY(calc(var(--dr)*1.5))}}
+  @keyframes bf{0%{opacity:0;transform:translateX(0) translateY(0)}3%{opacity:calc(var(--spawnFade,1) * var(--bop1,.12))}50%{opacity:calc(var(--spawnFade,1) * var(--bop2,.08));transform:translateX(calc(var(--tr)*.5)) translateY(var(--dr))}97%{opacity:calc(var(--spawnFade,1) * var(--bop3,.04))}100%{opacity:0;transform:translateX(var(--tr)) translateY(calc(var(--dr)*1.5))}}
   @keyframes wing-l{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(8deg)}}
   @keyframes wing-r{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-8deg)}}
   body:not([data-theme='dark']) .bird{mix-blend-mode:multiply;--bop1:.18;--bop2:.12;--bop3:.06}
@@ -165,7 +165,7 @@
   .blossom svg{width:100%;height:100%}
   .blossom .bv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round;stroke-width:calc(1.15 * var(--vizIntensity))}
   @keyframes blossom-fall{0%{transform:translateY(0) rotate(0) translateX(0)}25%{transform:translateY(12px) rotate(15deg) translateX(8px)}50%{transform:translateY(26px) rotate(-10deg) translateX(-6px)}75%{transform:translateY(38px) rotate(20deg) translateX(10px)}100%{transform:translateY(0) rotate(0) translateX(0)}}
-  @keyframes blossom-drift{0%{opacity:0;transform:translateX(0) translateY(0)}10%{opacity:max(var(--vizFloor),calc(.18 * var(--vizIntensity)))}60%{opacity:max(var(--vizFloor),calc(.12 * var(--vizIntensity)));transform:translateX(calc(var(--tx)*.6)) translateY(calc(var(--ty)*.6))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty))}}
+  @keyframes blossom-drift{0%{opacity:0;transform:translateX(0) translateY(0)}10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.18 * var(--vizIntensity))))}60%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.12 * var(--vizIntensity))));transform:translateX(calc(var(--tx)*.6)) translateY(calc(var(--ty)*.6))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty))}}
 
   /* Feather */
   .feather{
@@ -186,8 +186,8 @@
   .feather .fv{stroke:var(--red);fill:none;stroke-linecap:round;stroke-linejoin:round}
   @keyframes feather-fall{
     from{transform:translate3d(var(--x0,0px),-12vh,0);opacity:0}
-    12%{opacity:max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity)))}
-    68%{opacity:max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity)))}
+    12%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity))))}
+    68%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity))))}
     to{transform:translate3d(var(--x0,0px),112vh,0);opacity:0}
   }
   @keyframes feather-sway{
@@ -206,9 +206,9 @@
   @keyframes brush-sweep{0%{stroke-dashoffset:120;opacity:0}15%{opacity:calc(.10 * var(--vizIntensity))}50%{stroke-dashoffset:0;opacity:calc(.07 * var(--vizIntensity))}85%{opacity:calc(.10 * var(--vizIntensity))}100%{stroke-dashoffset:-120;opacity:0}}
   @keyframes brush-drift{
     0%{opacity:0;transform:translateX(0) translateY(0) rotate(0deg)}
-    12%{opacity:max(var(--vizFloor),calc(.2 * var(--vizIntensity)))}
+    12%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.2 * var(--vizIntensity))))}
     25%{transform:translateX(var(--mx1)) translateY(var(--my1)) rotate(var(--r1))}
-    50%{opacity:max(var(--vizFloor),calc(.18 * var(--vizIntensity)));transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
+    50%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.18 * var(--vizIntensity))));transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
     75%{transform:translateX(var(--mx3)) translateY(var(--my3)) rotate(var(--r3))}
     100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r4))}
   }
@@ -218,7 +218,7 @@
   .star{
     position:absolute;
     background:currentColor;
-    opacity:var(--so,.08);
+    opacity:calc(var(--spawnFade,1) * var(--so,.08));
     transform:rotate(45deg) scale(var(--gs,1));
     transform-origin:center;
     animation:star-breathe var(--sd,10s) ease-in-out var(--delay,0s) infinite alternate;
@@ -240,12 +240,12 @@
     animation:star-shoot var(--sdur,2200ms) ease-in-out forwards;
   }
   @keyframes stars-in{from{opacity:0}to{opacity:1}}
-  @keyframes star-breathe{from{opacity:max(var(--vizFloor),var(--so,.08))}to{opacity:max(var(--vizFloor),var(--sp,.2))}}
+  @keyframes star-breathe{from{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--so,.08)))}to{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--sp,.2)))}}
   @keyframes star-shoot{
     0%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scaleX(.3)}
-    10%{opacity:max(var(--vizFloor),calc(.16 * var(--vizIntensity)))}
-    40%{opacity:max(var(--vizFloor),calc(.12 * var(--vizIntensity)));transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
-    80%{opacity:max(var(--vizFloor),calc(.06 * var(--vizIntensity)));transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
+    10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.16 * var(--vizIntensity))))}
+    40%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.12 * var(--vizIntensity))));transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
+    80%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.06 * var(--vizIntensity))));transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
     100%{opacity:0;transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa)) scaleX(.2)}
   }
 
@@ -273,10 +273,10 @@
 
   /* Firefly Drift */
   .firefly{position:absolute;border-radius:50%;background:var(--red);opacity:0;will-change:transform,opacity;filter:blur(1px)}
-  @keyframes firefly-glow{0%,100%{opacity:0}15%{opacity:var(--fo,.08)}50%{opacity:var(--fp,.12)}85%{opacity:var(--fo,.08)}}
+  @keyframes firefly-glow{0%,100%{opacity:0}15%{opacity:calc(var(--spawnFade,1) * var(--fo,.08))}50%{opacity:calc(var(--spawnFade,1) * var(--fp,.12))}85%{opacity:calc(var(--spawnFade,1) * var(--fo,.08))}}
 
   @media (prefers-reduced-motion: reduce){
-    .star{animation:none !important;opacity:var(--so,.08) !important}
+    .star{animation:none !important;opacity:calc(var(--spawnFade,1) * var(--so,.08)) !important}
     .shooting-star{animation:none !important;opacity:0 !important}
   }
 
@@ -320,7 +320,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.10";
+const BUILD = "dev-0.1.11";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -495,6 +495,22 @@ function clampMagnitude(vx, vy, maxSpeed) {
   const scale = maxSpeed / mag;
   return [vx * scale, vy * scale];
 }
+// Spawn fade-in system ensures tranquil visual emergence.
+function spawnFadeMultiplier(spawnTime, fadeDuration = 1800) {
+  const elapsed = performance.now() - spawnTime;
+  return Math.min(1, elapsed / fadeDuration);
+}
+function applySpawnFade(el, fadeDuration = 1800) {
+  if(!el) return;
+  if(typeof el.spawnTime !== 'number') el.spawnTime = performance.now();
+  const tick=()=>{
+    if(!el.isConnected || el.dataset.fading==='1') return;
+    const m=Math.max(0,spawnFadeMultiplier(el.spawnTime, fadeDuration));
+    el.style.setProperty('--spawnFade',m.toFixed(3));
+    if(m<1) el._spawnFadeRaf=requestAnimationFrame(tick);
+  };
+  tick();
+}
 
 // ============ VISIBILITY / LIFECYCLE CLEANUP ============
 // Works across Safari, Chrome, Samsung Internet, Firefox
@@ -544,6 +560,7 @@ function fadeOutAndRemove(el, ms=900) {
   if(!el || el.dataset.fading==='1') return;
   el.dataset.fading='1';
   if(el._raf) cancelAnimationFrame(el._raf);
+  if(el._spawnFadeRaf) cancelAnimationFrame(el._spawnFadeRaf);
   if(typeof el._stop==='function') el._stop();
   el.classList.add('vis-fade-out');
   setTimeout(()=>{
@@ -660,6 +677,8 @@ const activeBirdLanes = new Set();
 
 function spawnBird() {
   const b=document.createElement('div');b.className='bird';
+  b.spawnTime=performance.now();
+  b.style.setProperty('--spawnFade','0');
   const sz=18+Math.random()*14, fl=Math.random()>.5;
   const freeLanes=BIRD_LANES.filter(v=>!activeBirdLanes.has(v));
   if(!freeLanes.length) return;
@@ -692,6 +711,7 @@ function spawnBird() {
   b._onRemove=()=>activeBirdLanes.delete(y);
   b.innerHTML=`<svg viewBox="0 0 20 12"><path class="wing wl" d="M10 6 L1 3"/><path class="wing wr" d="M10 6 L19 3"/></svg>`;
   VIS.appendChild(b);
+  applySpawnFade(b);
   setTimeout(()=>fadeOutAndRemove(b,900),dur*1e3+500);
 }
 function startBirds() {
@@ -830,6 +850,8 @@ function startCloudWisps() {
 function spawnStars() {
   const layer=document.createElement('div');
   layer.className='stars';
+  layer.spawnTime=performance.now();
+  layer.style.setProperty('--spawnFade','0');
 
   const vw=window.innerWidth, vh=window.innerHeight;
   const isPhone=Math.min(vw,vh)<520;
@@ -840,6 +862,7 @@ function spawnStars() {
   for(let i=0;i<total;i++){
     const s=document.createElement('div');
     s.className='star';
+    s.spawnTime=performance.now();
     const r=Math.random();
     const size=r<0.68?2:(r<0.95?3:4); // mostly 2-3px, rare 4px
     let x,y,tries=0;
@@ -868,6 +891,7 @@ function spawnStars() {
   }
 
   VIS.appendChild(layer);
+  applySpawnFade(layer);
   return layer;
 }
 function startStars() {
@@ -910,6 +934,8 @@ function startStars() {
     const vw=window.innerWidth, vh=window.innerHeight;
     const shot=document.createElement('div');
     shot.className='shooting-star';
+    shot.spawnTime=performance.now();
+    shot.style.setProperty('--spawnFade','0');
 
     const len=50+Math.random()*60;
     let dur=1800+Math.random()*1200;
@@ -947,6 +973,7 @@ function startStars() {
     shot.style.setProperty('--sa',smoothAng.toFixed(1)+'deg');
     shot.style.setProperty('--sdur',dur.toFixed(0)+'ms');
     layer.appendChild(shot);
+    applySpawnFade(shot);
 
     const tRm=setTimeout(()=>{
       if(shot.isConnected) shot.remove();
@@ -1142,6 +1169,8 @@ function drawSandPathsProgressive(ctx, paths, opts){
     for(let i=0;i<p.length-1;i++){
       queue.push({
         a:p[i], b:p[i+1],
+        spawnTime:performance.now(),
+        fadeLast:0,
         alpha:opts.alpha+(Math.random()-.5)*0.01,
         w:Math.max(0.8,Math.min(1.2,opts.width+(Math.random()-.5)*0.08))
       });
@@ -1164,6 +1193,14 @@ function drawSandPathsProgressive(ctx, paths, opts){
   const DURATION=300000; // exactly 300 seconds (5 minutes)
   const t0=performance.now();
   let drawn=0;
+  const fading=[];
+  const drawSeg=(seg,alphaMul=1)=>{
+    const a=Math.max(0.01,seg.alpha*Math.max(0,alphaMul));
+    if(a<=0.0001) return;
+    ctx.strokeStyle=sandColor(vizAlpha(a));
+    ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
+  };
 
   const tick=()=>{
     if(activeVisual!=='sand') return;
@@ -1171,16 +1208,25 @@ function drawSandPathsProgressive(ctx, paths, opts){
     const progress=Math.min(1,elapsed/DURATION);
     const target=Math.floor(progress*total);
 
-    // Draw all segments up to current progress point
+    // Add new segments to the fading queue (spawnTime set on creation moment).
     while(drawn<target && drawn<total){
       const seg=queue[drawn];
-      ctx.strokeStyle=sandColor(vizAlpha(Math.max(0.01,seg.alpha)));
-      ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
+      seg.spawnTime=performance.now();
+      seg.fadeLast=0;
+      fading.push(seg);
       drawn++;
     }
+    // Re-draw only incremental alpha so each line gently emerges.
+    for(let i=fading.length-1;i>=0;i--){
+      const seg=fading[i];
+      const f=spawnFadeMultiplier(seg.spawnTime);
+      const delta=Math.max(0,f-seg.fadeLast);
+      if(delta>0.0001) drawSeg(seg,delta);
+      seg.fadeLast=f;
+      if(f>=1) fading.splice(i,1);
+    }
 
-    if(drawn<total){
+    if(drawn<total || fading.length){
       const raf=requestAnimationFrame(tick);
       // Store for cleanup
       const wrapper={_raf:raf};
@@ -1225,6 +1271,7 @@ function startSandGarden() {
 function startRippleSystem() {
   const layer=document.createElement('div');
   layer.className='ripple';
+  layer.spawnTime=performance.now();
   const canvas=document.createElement('canvas');
   layer.appendChild(canvas);
   VIS.appendChild(layer);
@@ -1255,6 +1302,7 @@ function startRippleSystem() {
     for(let i=0;i<count;i++){
       rings.push({
         x,y,
+        spawnTime:performance.now(),
         startTime:performance.now()+i*80,
         duration:2200+Math.random()*1400,
         radiusStart:6+Math.random()*8,
@@ -1278,6 +1326,7 @@ function startRippleSystem() {
     const stoneDur=Math.max(1400,stepMs*(contacts-1)+stepMs*0.9);
     const evtStone={
       active:true,
+      spawnTime:performance.now(),
       t0:performance.now(),
       duration:stoneDur,
       dir:leftToRight?1:-1,
@@ -1319,7 +1368,8 @@ function startRippleSystem() {
       if(t>=1){ rings.splice(i,1); continue; }
       if(t<0) continue;
       const radius=r.radiusStart+(r.radiusEnd-r.radiusStart)*(1-Math.pow(1-t,2));
-      const opacity=r.opacityStart*(1-Math.pow(t,1.4));
+      const fadeIn=spawnFadeMultiplier(r.spawnTime);
+      const opacity=r.opacityStart*(1-Math.pow(t,1.4))*fadeIn;
       if(opacity<=0) continue;
       ctx.globalAlpha=vizAlpha(opacity);
       ctx.lineWidth=vizWidth(r.lineWidth);
@@ -1348,6 +1398,7 @@ function startRippleSystem() {
         let sa=0.16;
         if(u<0.10) sa*=u/0.10;
         else if(u>0.88) sa*=(1-u)/0.12;
+        sa*=spawnFadeMultiplier(stone.spawnTime);
         if(sa>0){
           const rr=vizWidth(stone.r);
           ctx.globalAlpha=vizAlpha(sa);
@@ -1513,6 +1564,7 @@ function startSerpent() {
 function spawnBee() {
   const b=document.createElement('div');
   b.className='bee';
+  b.spawnTime=performance.now();
   const beeId='bee-'+(++beeTrailSeq);
   b.dataset.id=beeId;
   const sz=15+Math.random()*12; // larger for better visibility on mobile
@@ -1587,6 +1639,7 @@ function spawnBee() {
     let op=V.opMax;
     if(p<.1) op=V.opMax*(p/.1);
     else if(p>.85) op=V.opMax*((1-p)/.15);
+    op*=spawnFadeMultiplier(b.spawnTime);
     b.style.opacity=vizOpacity(Math.max(0,op),true).toFixed(3);
     b.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
     const cx=x+sz*.5, cy=y+sz*.5;
@@ -1616,6 +1669,8 @@ function startBees() {
 function spawnFirefly() {
   const f=document.createElement('div');
   f.className='firefly';
+  f.spawnTime=performance.now();
+  f.style.setProperty('--spawnFade','0');
   const sz=2+Math.random()*2.5; // tiny 2-4.5px dots
   const vw=window.innerWidth, vh=window.innerHeight;
 
@@ -1642,6 +1697,7 @@ function spawnFirefly() {
   f.style.animationDelay=(Math.random()*8)+'s';
 
   VIS.appendChild(f);
+  applySpawnFade(f);
 
   // Gentle drift over time
   const t0=performance.now();
@@ -1692,6 +1748,7 @@ function spawnKoi() {
   if (VIS.querySelectorAll('.koi').length > 0) return;
   const k=document.createElement('div');
   k.className='koi';
+  k.spawnTime=performance.now();
   const bodyLen=52+Math.random()*18; // fish body length
   const vw=window.innerWidth;
   const vh=window.innerHeight;
@@ -1871,6 +1928,7 @@ function spawnKoi() {
     let op=V.opMax;
     if(p<.1) op=V.opMax*(p/.1);
     else if(p>.9) op=V.opMax*((1-p)/.1);
+    op*=spawnFadeMultiplier(k.spawnTime);
     k.style.opacity=vizOpacity(Math.max(0,op),true).toFixed(3);
 
     k._raf=requestAnimationFrame(step);
@@ -1917,6 +1975,8 @@ function startInk() {
 // ======== CHERRY BLOSSOM ========
 function spawnBlossom() {
   const b=document.createElement('div');b.className='blossom';
+  b.spawnTime=performance.now();
+  b.style.setProperty('--spawnFade','0');
   const tier=Math.random();
   let sz;
   if(tier<0.5) sz=10+Math.random()*8;      // small
@@ -1936,6 +1996,7 @@ function spawnBlossom() {
   b.style.animationDuration=dur+'s';
   b.innerHTML='<svg viewBox="0 0 22 22" style="animation:blossom-fall 6.5s ease-in-out infinite"><path class="bv" stroke-width="'+vizWidth(0.9).toFixed(3)+'" d="M11 1 C12 4, 14 5, 11 8 M11 8 C15 7, 17 5, 20 7 M11 8 C14 10, 15 13, 13 15 M11 8 C8 10, 7 13, 9 15 M11 8 C7 7, 5 5, 2 7 M11 8 C10 4, 8 5, 11 1"/><circle cx="11" cy="8" r="1.3" fill="currentColor" fill-opacity="'+vizAlpha(0.2).toFixed(3)+'" stroke="none"/></svg>';
   VIS.appendChild(b);
+  applySpawnFade(b);
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
 function startBlossom() {
@@ -1947,6 +2008,8 @@ function startBlossom() {
 // ======== FEATHER ========
 function spawnFeather() {
   const f=document.createElement('div');f.className='feather';
+  f.spawnTime=performance.now();
+  f.style.setProperty('--spawnFade','0');
   const sz=16+Math.random()*14;
   const vw=window.innerWidth,vh=window.innerHeight;
   const x=Math.random()*(vw-sz);
@@ -1983,6 +2046,7 @@ function spawnFeather() {
   const featherSVG=f.querySelector('svg');
   if(featherSVG) featherSVG.style.animationDelay=(-Math.random()*4).toFixed(2)+'s';
   VIS.appendChild(f);
+  applySpawnFade(f);
   setTimeout(()=>fadeOutAndRemove(f,900),(dur+1)*1e3);
 }
 function startFeathers() {
@@ -1994,6 +2058,8 @@ function startFeathers() {
 // ======== BRUSHSTROKE ========
 function spawnBrush() {
   const b=document.createElement('div');b.className='brush';
+  b.spawnTime=performance.now();
+  b.style.setProperty('--spawnFade','0');
   const vw=window.innerWidth,vh=window.innerHeight;
   const w=80+Math.random()*120;
   const h=22+Math.random()*16;
@@ -2035,6 +2101,7 @@ function spawnBrush() {
   const sweepDelay=(Math.random()*3).toFixed(1);
   b.innerHTML='<svg viewBox="0 0 100 24">'+Array.from({length:lines}).map((_,i)=>{const offset=6+i*6+(Math.random()*2-1)*2;const amp=4+Math.random()*3;const path=`M2 ${offset.toFixed(2)} C 18 ${(offset-amp).toFixed(2)}, 34 ${(offset+amp).toFixed(2)}, 50 ${offset.toFixed(2)} C 66 ${(offset-amp).toFixed(2)}, 82 ${(offset+amp).toFixed(2)}, 98 ${offset.toFixed(2)}`;const opacity=vizAlpha(Math.max(0.06,0.12-i*0.02));return '<path class="br" d="'+path+'" stroke="'+color+'" stroke-width="'+sw.toFixed(3)+'" stroke-dasharray="120" opacity="'+opacity.toFixed(3)+'" style="animation:brush-sweep '+sweepDur+'s ease-in-out infinite;animation-delay:'+sweepDelay+'s;"/>';}).join('')+'</svg>';
   VIS.appendChild(b);
+  applySpawnFade(b);
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
 function startBrush() {
