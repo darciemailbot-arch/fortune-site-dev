@@ -5,29 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#EBDCB8">
+<meta name="theme-color" content="#1D2545">
 <title>Fortune</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg-primary:#EBDCB8;
-    --text-primary:#1D2545;
-    --text-secondary:#4a6b4e;
-    --viz-strong:rgba(29,37,69,.24);
-    --viz-medium:rgba(29,37,69,.16);
-    --viz-subtle:rgba(29,37,69,.11);
-    --viz-faint:rgba(29,37,69,.08);
-    --sage:#7a9a7e;
-    --sage-dark:#5c7e60;
-    --sage-light:#a3bfa6;
-    --sage-pale:#c8daca;
-    --sage-faint:#e2ede3;
+    --bg-primary:#1D2545;
+    --text-primary:#E8DFC5;
+    --text-secondary:rgba(232,223,197,.72);
+    --text-tertiary:rgba(232,223,197,.45);
+    --viz-strong:rgba(232,223,197,.85);
+    --viz-medium:rgba(232,223,197,.55);
+    --viz-subtle:rgba(232,223,197,.28);
+    --viz-faint:rgba(232,223,197,.14);
+    --sage:var(--text-secondary);
+    --sage-dark:var(--text-primary);
+    --sage-light:var(--text-secondary);
+    --sage-pale:var(--viz-subtle);
+    --sage-faint:var(--viz-faint);
     --bg:var(--bg-primary);
     --ink:var(--text-secondary);
     --red:var(--text-primary);
-    --red-light:var(--viz-faint);
+    --red-light:var(--text-tertiary);
     --vizIntensity:1.0;
     --vizDark:1.0;
     --vizLight:1.35;
@@ -35,8 +36,8 @@
   }
   body[data-theme='dark']{--vizFloor:0.08}
   html,body{height:100%;overflow:hidden}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased;transition:background-color 1s ease,color 1s ease}
-  body.palette-transition{transition:background-color .8s ease,color .8s ease}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased}
+  body.palette-transition{transition:background-color .7s ease,color .7s ease}
 
   /* Gentle theme crossfade for palette-based properties */
   .theme-toggle,.lb,.ls,.fortune,.nums,.signoff,.cookie-btn span,.cookie-btn .ck,
@@ -47,15 +48,15 @@
 
   /* Background depth layers */
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 100%, white 0%) 0%, transparent 100%);
+    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 94%, var(--text-primary) 6%) 0%, transparent 100%);
     opacity:.35}
   body[data-theme='dark']::before{
-    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 100%, #2a2a3a 0%) 0%, transparent 100%);
+    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 88%, var(--text-primary) 12%) 0%, transparent 100%);
     opacity:.2}
   .vignette{position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 50%, rgba(0,0,0,.05) 100%)}
+    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 50%, var(--viz-faint) 100%)}
   body[data-theme='dark'] .vignette{
-    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 45%, rgba(0,0,0,.12) 100%)}
+    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 45%, var(--viz-subtle) 100%)}
 
   body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");background-repeat:repeat;background-size:200px 200px}
   body[data-theme='dark']::after{background-image:none}
@@ -217,7 +218,7 @@
   .brush canvas{width:100%;height:100%;display:block}
 
   /* Stars (diamond variation, restrained) */
-  .stars{position:absolute;inset:0;pointer-events:none;opacity:0;animation:stars-in 1.2s ease forwards;color:color-mix(in srgb,var(--red) 90%,#b89091 10%)}
+  .stars{position:absolute;inset:0;pointer-events:none;opacity:0;animation:stars-in 1.2s ease forwards;color:var(--viz-medium)}
   .star{
     position:absolute;
     background:currentColor;
@@ -228,7 +229,7 @@
     transition:transform .35s ease,opacity .35s ease;
     will-change:opacity,transform
   }
-  body[data-theme='dark'] .stars{color:var(--text-primary)}
+  body[data-theme='dark'] .stars{color:var(--viz-strong)}
   .shooting-star{
     position:absolute;
     left:0;
@@ -303,8 +304,8 @@
   /* Golden Bee Hover */
   .bee{position:absolute;opacity:0;will-change:transform,opacity;filter:blur(.2px)}
   .bee svg{width:100%;height:100%}
-  .bee .bz{fill:color-mix(in srgb,var(--red) 70%,#000 30%);opacity:calc(.28 * var(--vizIntensity));stroke:none}
-  .bee .bzo{fill:none;stroke:color-mix(in srgb,var(--red) 68%,#000 32%);stroke-width:calc(1 * var(--vizIntensity));opacity:calc(.22 * var(--vizIntensity))}
+  .bee .bz{fill:var(--viz-medium);opacity:1;stroke:none}
+  .bee .bzo{fill:none;stroke:var(--viz-subtle);stroke-width:calc(1 * var(--vizIntensity));opacity:1}
   .bee-trail{position:absolute;inset:0;pointer-events:none}
   .bee-trail canvas{width:100%;height:100%;display:block}
 
@@ -357,34 +358,50 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.22";
+const BUILD = "dev-0.1.23";
 const THEME_KEY = 'fortuneTheme';
+const PALETTE_SALT_KEY = 'paletteSalt';
+const PALETTE_CACHE_KEY = 'paletteCache';
 const PALETTE_WINDOW_HOURS = 6;
-const PALETTE_SALT_KEY = 'fortunePaletteSaltV1';
-const PALETTE_CACHE_KEY = 'fortunePaletteCacheV1';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
 let vizOpacityFloor = 0.14;
-let paletteSession = null;
+let paletteSession = null; // fixed for this load; no mid-session palette switching
 let paletteTransitionArmed = false;
 if(typeof window.__BOOTSTRAP_VIZ_BOOST !== 'number') window.__BOOTSTRAP_VIZ_BOOST = 1;
 
-const PALETTES = {
-  light: [
-    { bg:'#EFE6CF', text:'#1F3A2E', text2:'#4F655A', vizStrong:'rgba(31,58,46,0.24)', vizMedium:'rgba(31,58,46,0.16)', vizSubtle:'rgba(31,58,46,0.11)', vizFaint:'rgba(31,58,46,0.08)' },
-    { bg:'#F2ECE1', text:'#27324A', text2:'#596175', vizStrong:'rgba(39,50,74,0.24)', vizMedium:'rgba(39,50,74,0.16)', vizSubtle:'rgba(39,50,74,0.11)', vizFaint:'rgba(39,50,74,0.08)' },
-    { bg:'#EFE4DA', text:'#3C2C3E', text2:'#665766', vizStrong:'rgba(60,44,62,0.24)', vizMedium:'rgba(60,44,62,0.16)', vizSubtle:'rgba(60,44,62,0.11)', vizFaint:'rgba(60,44,62,0.08)' },
-    { bg:'#E6E8E3', text:'#2A3A44', text2:'#54646F', vizStrong:'rgba(42,58,68,0.24)', vizMedium:'rgba(42,58,68,0.16)', vizSubtle:'rgba(42,58,68,0.11)', vizFaint:'rgba(42,58,68,0.08)' },
-    { bg:'#E8E6DC', text:'#2B3530', text2:'#5A645E', vizStrong:'rgba(43,53,48,0.24)', vizMedium:'rgba(43,53,48,0.16)', vizSubtle:'rgba(43,53,48,0.11)', vizFaint:'rgba(43,53,48,0.08)' }
-  ],
-  dark: [
-    { bg:'#1C2438', text:'#E6DDC6', text2:'#B8B19D', vizStrong:'rgba(230,221,198,0.24)', vizMedium:'rgba(230,221,198,0.16)', vizSubtle:'rgba(230,221,198,0.11)', vizFaint:'rgba(230,221,198,0.08)' },
-    { bg:'#1D2A26', text:'#E5DBC4', text2:'#AEBDAF', vizStrong:'rgba(229,219,196,0.24)', vizMedium:'rgba(229,219,196,0.16)', vizSubtle:'rgba(229,219,196,0.11)', vizFaint:'rgba(229,219,196,0.08)' },
-    { bg:'#1F2025', text:'#E8DFCF', text2:'#B6B1A5', vizStrong:'rgba(232,223,207,0.24)', vizMedium:'rgba(232,223,207,0.16)', vizSubtle:'rgba(232,223,207,0.11)', vizFaint:'rgba(232,223,207,0.08)' },
-    { bg:'#2B2420', text:'#EADDCB', text2:'#BDAF9E', vizStrong:'rgba(234,221,203,0.24)', vizMedium:'rgba(234,221,203,0.16)', vizSubtle:'rgba(234,221,203,0.11)', vizFaint:'rgba(234,221,203,0.08)' },
-    { bg:'#202C30', text:'#E8DEC7', text2:'#AAB9B1', vizStrong:'rgba(232,222,199,0.24)', vizMedium:'rgba(232,222,199,0.16)', vizSubtle:'rgba(232,222,199,0.11)', vizFaint:'rgba(232,222,199,0.08)' }
-  ]
-};
+function hexToRgb(hex){
+  const v=(hex||'').replace('#','').trim();
+  const full=v.length===3 ? v.split('').map(c=>c+c).join('') : v;
+  return [
+    parseInt(full.slice(0,2),16),
+    parseInt(full.slice(2,4),16),
+    parseInt(full.slice(4,6),16)
+  ];
+}
+
+function rgbaFromHex(hex,a){
+  const [r,g,b]=hexToRgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function createPalette(bg,text){
+  return {
+    bg,
+    text,
+    textSecondary:rgbaFromHex(text,0.72),
+    textTertiary:rgbaFromHex(text,0.45),
+    vizStrong:rgbaFromHex(text,0.85),
+    vizMedium:rgbaFromHex(text,0.55),
+    vizSubtle:rgbaFromHex(text,0.28),
+    vizFaint:rgbaFromHex(text,0.14)
+  };
+}
+
+const PALETTES = [
+  createPalette('#1D2545','#E8DFC5'), // A: Navy/Cream (existing)
+  createPalette('#013220','#FDFBD4')  // B: Forest/Cream
+];
 
 function safeGetLS(key){
   try { return localStorage.getItem(key); }
@@ -397,7 +414,7 @@ function safeSetLS(key,val){
 }
 
 function seededRandom(seed){
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453123;
+  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453123;
   return x - Math.floor(x);
 }
 
@@ -409,25 +426,13 @@ function getPaletteUserSalt(){
   return generated;
 }
 
-function localHoursSinceEpoch(nowMs){
-  const now = Number.isFinite(nowMs) ? nowMs : Date.now();
-  const offsetMs = new Date(now).getTimezoneOffset() * 60000;
-  return Math.floor((now - offsetMs) / 3600000);
-}
-
-function nextWindowBoundary(nowMs){
-  const now = new Date(Number.isFinite(nowMs) ? nowMs : Date.now());
-  const next = new Date(now.getTime());
-  next.setMinutes(0,0,0);
-  const nextHour = (Math.floor(now.getHours() / PALETTE_WINDOW_HOURS) + 1) * PALETTE_WINDOW_HOURS;
-  next.setHours(nextHour,0,0,0);
-  return next.getTime();
-}
-
 function resolvePaletteSession(){
   const now = Date.now();
+  const windowMs = PALETTE_WINDOW_HOURS * 3600 * 1000;
+  const windowKey = Math.floor(now / windowMs);
+  const windowStart = windowKey * windowMs;
+  const expiresAt = windowStart + windowMs;
   const userSalt = getPaletteUserSalt();
-  const windowKey = Math.floor(localHoursSinceEpoch(now) / PALETTE_WINDOW_HOURS);
   const cachedRaw = safeGetLS(PALETTE_CACHE_KEY);
   if(cachedRaw){
     try{
@@ -435,57 +440,48 @@ function resolvePaletteSession(){
       const valid =
         cached &&
         cached.userSalt === userSalt &&
-        cached.windowKey === windowKey &&
+        Number.isInteger(cached.paletteIndex) &&
+        cached.paletteIndex >= 0 &&
+        cached.paletteIndex < PALETTES.length &&
         Number.isFinite(cached.expiresAt) &&
-        now < cached.expiresAt &&
-        Number.isInteger(cached.lightIndex) &&
-        Number.isInteger(cached.darkIndex) &&
-        cached.lightIndex >= 0 &&
-        cached.darkIndex >= 0 &&
-        cached.lightIndex < PALETTES.light.length &&
-        cached.darkIndex < PALETTES.dark.length;
+        now < cached.expiresAt;
       if(valid) return cached;
     }catch(_){}
   }
-  const pick = (themeOffset, len) => {
-    const rnd = seededRandom(windowKey * 4099 + userSalt * 131 + themeOffset);
-    return Math.floor(rnd * len) % len;
-  };
+  const rnd = seededRandom(windowKey + userSalt);
   const session = {
     userSalt,
     windowKey,
-    lightIndex: pick(17, PALETTES.light.length),
-    darkIndex: pick(53, PALETTES.dark.length),
-    expiresAt: nextWindowBoundary(now)
+    paletteIndex: Math.floor(rnd * PALETTES.length) % PALETTES.length,
+    expiresAt
   };
   safeSetLS(PALETTE_CACHE_KEY, JSON.stringify(session));
   return session;
 }
 
-function currentThemePalette(theme){
+function currentPalette(){
   if(!paletteSession) paletteSession = resolvePaletteSession();
-  const list = theme === 'dark' ? PALETTES.dark : PALETTES.light;
-  const idx = theme === 'dark' ? paletteSession.darkIndex : paletteSession.lightIndex;
-  return list[idx] || list[0];
+  return PALETTES[paletteSession.paletteIndex] || PALETTES[0];
 }
 
-function applyPalette(theme){
-  const p = currentThemePalette(theme);
+function applyPalette(){
+  const p = currentPalette();
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--bg-primary', p.bg);
   rootStyle.setProperty('--text-primary', p.text);
-  rootStyle.setProperty('--text-secondary', p.text2);
+  rootStyle.setProperty('--text-secondary', p.textSecondary);
+  rootStyle.setProperty('--text-tertiary', p.textTertiary);
   rootStyle.setProperty('--viz-strong', p.vizStrong);
   rootStyle.setProperty('--viz-medium', p.vizMedium);
   rootStyle.setProperty('--viz-subtle', p.vizSubtle);
   rootStyle.setProperty('--viz-faint', p.vizFaint);
   rootStyle.setProperty('--bg', p.bg);
-  rootStyle.setProperty('--ink', p.text2);
+  rootStyle.setProperty('--ink', p.textSecondary);
   rootStyle.setProperty('--red', p.text);
-  rootStyle.setProperty('--red-light', p.vizFaint);
-  rootStyle.setProperty('--sage', p.text2);
+  rootStyle.setProperty('--red-light', p.textTertiary);
+  rootStyle.setProperty('--sage', p.textSecondary);
   rootStyle.setProperty('--sage-dark', p.text);
-  rootStyle.setProperty('--sage-light', p.text2);
+  rootStyle.setProperty('--sage-light', p.textSecondary);
   rootStyle.setProperty('--sage-pale', p.vizSubtle);
   rootStyle.setProperty('--sage-faint', p.vizFaint);
   return p;
@@ -500,7 +496,7 @@ function updateVizIntensityCache(theme) {
 }
 
 function applyTheme(theme) {
-  const palette = applyPalette(theme);
+  const palette = applyPalette();
   document.body.setAttribute('data-theme', theme);
   document.documentElement.style.setProperty('--vizIntensity', theme === 'dark' ? 'var(--vizDark)' : 'var(--vizLight)');
   updateVizIntensityCache(theme);
@@ -512,7 +508,7 @@ function initTheme() {
   if(!paletteTransitionArmed && document.body){
     paletteTransitionArmed = true;
     document.body.classList.add('palette-transition');
-    setTimeout(()=>document.body.classList.remove('palette-transition'),860);
+    setTimeout(()=>document.body.classList.remove('palette-transition'),900);
   }
   const saved = safeGetLS(THEME_KEY);
   if (saved === 'light' || saved === 'dark') return applyTheme(saved);
@@ -906,7 +902,7 @@ function renderBeeTrail(now){
     return;
   }
   beeTrailCtx.clearRect(0,0,beeTrailW,beeTrailH);
-  const c=getComputedStyle(document.body).getPropertyValue('--red').trim() || '#222';
+  const c=getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#E8DFC5';
   beeTrailCtx.fillStyle=c;
   for(let i=beeTrailPoints.length-1;i>=0;i--){
     const p=beeTrailPoints[i];
@@ -1617,8 +1613,8 @@ function startRippleSystem() {
   resize();
 
   const ringStroke=()=>{
-    const c=getComputedStyle(document.body).getPropertyValue('--red').trim();
-    return c || '#222';
+    const c=getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
+    return c || '#E8DFC5';
   };
 
   const spawnRipple=(x,y)=>{
@@ -2504,7 +2500,7 @@ function spawnBrush() {
     const fadeIn=spawnFadeMultiplier(layer.spawnTime);
 
     ctx.clearRect(0,0,w,h);
-    const c=getComputedStyle(document.body).getPropertyValue('--red').trim() || '#9a1f22';
+    const c=getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#E8DFC5';
     ctx.strokeStyle=c;
     const clipped=beginReadZoneClip();
 
