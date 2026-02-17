@@ -358,7 +358,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.23";
+const BUILD = "dev-0.1.24";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache';
@@ -798,8 +798,7 @@ function getSandReadZone(w,h,pad=34){
   return {x:left,y:top,w:right-left,h:bottom-top};
 }
 
-function getProtectedUiRects(w,h,pad=22){
-  const selectors=['#fortune','#nums','#btn','.lang','#themeToggle'];
+function getRectsForSelectors(w,h,selectors,pad=22){
   const out=[];
   for(const sel of selectors){
     const el=document.querySelector(sel);
@@ -816,8 +815,54 @@ function getProtectedUiRects(w,h,pad=22){
   return out;
 }
 
+function getProtectedUiRects(w,h,pad=22){
+  const selectors=['#fortune','#nums','#btn','.lang','#themeToggle'];
+  return getRectsForSelectors(w,h,selectors,pad);
+}
+
 function getSandProtectedRects(w,h,pad=24){
   return getProtectedUiRects(w,h,pad);
+}
+
+function unionRects(rects){
+  if(!rects || !rects.length) return null;
+  let left=Infinity, top=Infinity, right=-Infinity, bottom=-Infinity;
+  for(const r of rects){
+    left=Math.min(left,r.x);
+    top=Math.min(top,r.y);
+    right=Math.max(right,r.x+r.w);
+    bottom=Math.max(bottom,r.y+r.h);
+  }
+  if(!isFinite(left) || !isFinite(top) || !isFinite(right) || !isFinite(bottom)) return null;
+  return {x:left,y:top,w:right-left,h:bottom-top};
+}
+
+function getSandSoftZones(w,h){
+  const zones=[];
+  const contentRects=getRectsForSelectors(w,h,['#fortune','#nums','#btn'],34);
+  const topRects=getRectsForSelectors(w,h,['.lang','#themeToggle'],24);
+  const content=unionRects(contentRects);
+  const top=unionRects(topRects);
+  const base=Math.min(w,h);
+  if(content){
+    zones.push({
+      cx:content.x+content.w*0.5,
+      cy:content.y+content.h*0.5,
+      rx:Math.max(content.w*0.72,110),
+      ry:Math.max(content.h*0.78,84),
+      feather:Math.max(48,Math.min(92,base*0.13))
+    });
+  }
+  if(top){
+    zones.push({
+      cx:top.x+top.w*0.5,
+      cy:top.y+top.h*0.5,
+      rx:Math.max(top.w*0.78,140),
+      ry:Math.max(top.h*1.45,34),
+      feather:Math.max(42,Math.min(84,base*0.11))
+    });
+  }
+  return zones;
 }
 
 function roundedRectPath(ctx,x,y,w,h,r){
@@ -1444,30 +1489,53 @@ function buildSandGardenPaths(w,h,stones,baseAngleDeg,spacing){
 
 function drawSandPathsProgressive(ctx, paths, opts){
   if(!paths.length) return;
-  const beginReadZoneClip=()=>{
-    const rects=(opts.protectedRects && opts.protectedRects.length) ? opts.protectedRects : (opts.safeRect ? [opts.safeRect] : []);
-    if(!rects.length) return false;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0,0,opts.canvasW,opts.canvasH);
-    for(const r of rects){
-      if(!(r.w>0 && r.h>0)) continue;
-      roundedRectPath(ctx,r.x,r.y,r.w,r.h,22);
-    }
-    ctx.clip('evenodd');
-    return true;
+  const zones=opts.softZones || [];
+  const clamp01=v=>Math.max(0,Math.min(1,v));
+  const smoothstep=(edge0,edge1,x)=>{
+    const denom=(edge1-edge0) || 1;
+    const t=clamp01((x-edge0)/denom);
+    return t*t*(3-2*t);
   };
-  const endReadZoneClip=(active)=>{ if(active) ctx.restore(); };
+  const ellipseBoundaryDist=(x,y,z)=>{
+    const rx=Math.max(1,z.rx), ry=Math.max(1,z.ry);
+    const nx=(x-z.cx)/rx;
+    const ny=(y-z.cy)/ry;
+    const q=Math.hypot(nx,ny);
+    return (q-1)*Math.min(rx,ry); // negative inside, positive outside
+  };
+  const pointMask=(x,y)=>{
+    if(!zones.length) return 1;
+    let f=1;
+    for(const z of zones){
+      const d=ellipseBoundaryDist(x,y,z);
+      const m=smoothstep(0,z.feather,d);
+      if(m<f) f=m;
+      if(f<=0) return 0;
+    }
+    return f;
+  };
+  const segMask=(a,b)=>{
+    const mx=(a[0]+b[0])*0.5;
+    const my=(a[1]+b[1])*0.5;
+    const m1=pointMask(a[0],a[1]);
+    const m2=pointMask(mx,my);
+    const m3=pointMask(b[0],b[1]);
+    return Math.min(m1,m2,m3);
+  };
   // Flatten all segments into a single drawing queue
   const queue=[];
   for(const p of paths){
     for(let i=0;i<p.length-1;i++){
+      const a=p[i], b=p[i+1];
+      const mask=segMask(a,b);
+      if(mask<=0.0001) continue;
       queue.push({
-        a:p[i], b:p[i+1],
+        a,b,
         spawnTime:performance.now(),
         fadeLast:0,
         alpha:opts.alpha+(Math.random()-.5)*0.01,
-        w:Math.max(0.8,Math.min(1.2,opts.width+(Math.random()-.5)*0.08))
+        w:Math.max(0.8,Math.min(1.2,opts.width+(Math.random()-.5)*0.08)),
+        mask
       });
     }
   }
@@ -1476,13 +1544,13 @@ function drawSandPathsProgressive(ctx, paths, opts){
 
   if(opts.reduceMotion){
     // Draw everything immediately
-    const clipped=beginReadZoneClip();
     for(const seg of queue){
-      ctx.strokeStyle=sandColor(vizAlpha(Math.max(0.01,seg.alpha)));
+      const a=Math.max(0,seg.alpha*seg.mask);
+      if(a<=0.0001) continue;
+      ctx.strokeStyle=sandColor(vizAlpha(a));
       ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
     }
-    endReadZoneClip(clipped);
     return;
   }
 
@@ -1492,7 +1560,7 @@ function drawSandPathsProgressive(ctx, paths, opts){
   let drawn=0;
   const fading=[];
   const drawSeg=(seg,alphaMul=1)=>{
-    const a=Math.max(0.01,seg.alpha*Math.max(0,alphaMul));
+    const a=Math.max(0,seg.alpha*Math.max(0,alphaMul)*seg.mask);
     if(a<=0.0001) return;
     ctx.strokeStyle=sandColor(vizAlpha(a));
     ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
@@ -1501,7 +1569,6 @@ function drawSandPathsProgressive(ctx, paths, opts){
 
   const tick=()=>{
     if(activeVisual!=='sand') return;
-    const clipped=beginReadZoneClip();
     const elapsed=performance.now()-t0;
     const progress=Math.min(1,elapsed/DURATION);
     const target=Math.floor(progress*total);
@@ -1530,7 +1597,6 @@ function drawSandPathsProgressive(ctx, paths, opts){
       const wrapper={_raf:raf};
       wrapper._stop=()=>cancelAnimationFrame(raf);
     }
-    endReadZoneClip(clipped);
   };
   requestAnimationFrame(tick);
 }
@@ -1552,7 +1618,7 @@ function startSandGarden() {
     sandInit=initSandCanvas(sand);
     const {ctx,w,h}=sandInit;
     const isDark=document.body.getAttribute('data-theme')==='dark';
-    const protectedRects=getSandProtectedRects(w,h,28);
+    const softZones=getSandSoftZones(w,h);
     ctx.clearRect(0,0,w,h); // start blank
     const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
     const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
@@ -1560,7 +1626,7 @@ function startSandGarden() {
       alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
       width:0.8+Math.random()*0.4,
       reduceMotion:prefersReduced,
-      protectedRects,
+      softZones,
       canvasW:w,
       canvasH:h
     });
