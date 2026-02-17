@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.00";
+const BUILD = "dev-0.2.01";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v2';
@@ -586,7 +586,7 @@ const TIERS = [
     distScale: 0.65, durScale: 1.50,
     opMax: 0.09, opSafe: 0.04, opPeak: 0.11,
     countOffset: -2, spawnScale: 1.50,
-    jitterMin: 2000, jitterMax: 5000,
+    jitterMin: 500, jitterMax: 1800,
     rafStep: 50, // ~20fps cap
     koi:     { max: 1, initial: 1 },
     ink:     { max: 1, initial: 1 },
@@ -605,7 +605,7 @@ const TIERS = [
     distScale: 0.80, durScale: 1.30,
     opMax: 0.12, opSafe: 0.05, opPeak: 0.14,
     countOffset: -1, spawnScale: 1.25,
-    jitterMin: 1000, jitterMax: 4000,
+    jitterMin: 250, jitterMax: 1200,
     rafStep: 34, // ~30fps cap
     koi:     { max: 1, initial: 1 },
     ink:     { max: 1, initial: 1 },
@@ -686,11 +686,11 @@ function clampMagnitude(vx, vy, maxSpeed) {
   return [vx * scale, vy * scale];
 }
 // Spawn fade-in system ensures tranquil visual emergence.
-function spawnFadeMultiplier(spawnTime, fadeDuration = 1800) {
+function spawnFadeMultiplier(spawnTime, fadeDuration = 1300) {
   const elapsed = performance.now() - spawnTime;
   return Math.min(1, elapsed / fadeDuration);
 }
-function applySpawnFade(el, fadeDuration = 1800) {
+function applySpawnFade(el, fadeDuration = 1300) {
   if(!el) return;
   if(typeof el.spawnTime !== 'number') el.spawnTime = performance.now();
   const tick=()=>{
@@ -745,7 +745,7 @@ function schedulePostSeedVisualSwitch() {
     postSeedVisualTimer = null;
     if(document.hidden || isTransitioning || activeVisual!=='stars') return;
     pickVisual();
-  },12000);
+  },4200);
   visTimers.push(postSeedVisualTimer);
 }
 
@@ -1607,7 +1607,7 @@ function drawSandPathsProgressive(ctx, paths, opts){
   }
 
   // Delta-time progressive draw: map (now - t0) / DURATION to segment index
-  const DURATION=300000; // exactly 300 seconds (5 minutes)
+  const DURATION=120000; // 120 seconds for a visibly earlier reveal
   const t0=performance.now();
   let drawn=0;
   const fading=[];
@@ -1623,7 +1623,9 @@ function drawSandPathsProgressive(ctx, paths, opts){
     if(activeVisual!=='sand') return;
     const elapsed=performance.now()-t0;
     const progress=Math.min(1,elapsed/DURATION);
-    const target=Math.floor(progress*total);
+    const linearTarget=Math.floor(progress*total);
+    const burstTarget=Math.min(total,Math.floor(elapsed/120));
+    const target=Math.max(linearTarget,burstTarget);
 
     // Add new segments to the fading queue (spawnTime set on creation moment).
     while(drawn<target && drawn<total){
