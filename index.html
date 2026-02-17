@@ -355,7 +355,7 @@ const VIS = document.getElementById('vis');
 const BUILD = "dev-0.2.01";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
-const PALETTE_CACHE_KEY = 'paletteCache_v2';
+const PALETTE_CACHE_KEY = 'paletteCache_v3';
 const PALETTE_WINDOW_HOURS = 6;
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -393,29 +393,45 @@ function createPalette(bg,text){
 }
 
 const PALETTES = [
+  // ── INDIGO & GOLD ──
   { // Midnight — deepest indigo + warm gold
     dark: createPalette('#3C3487','#FFE186'),
     light: createPalette('#FFF8E7','#3C3487')
   },
-  { // Dusk — purple-indigo + soft cream-gold
+  { // Dusk — purple-indigo + soft cream
     dark: createPalette('#484399','#F5E6C8'),
     light: createPalette('#F5F0E3','#484399')
   },
-  { // Twilight — deep navy-indigo + warm amber
+  { // Twilight — deep indigo + amber
     dark: createPalette('#3A3578','#E8AC2D'),
     light: createPalette('#FFF6DC','#3A3578')
   },
-  { // Evening — muted indigo + pale gold
-    dark: createPalette('#423D7A','#FFE186'),
-    light: createPalette('#FFFAE8','#423D7A')
+  // ── TEAL & SAGE ──
+  { // Stillwater — deep teal + pale frost
+    dark: createPalette('#22343a','#e0eef2'),
+    light: createPalette('#edf4f7','#22343a')
   },
-  { // Violet Hour — rich purple + warm cream
-    dark: createPalette('#3C3487','#F2E4C6'),
-    light: createPalette('#F3EDE0','#3C3487')
+  { // Tideline — ocean teal + warm mist
+    dark: createPalette('#375b63','#edf4f7'),
+    light: createPalette('#f0f6f8','#375b63')
   },
-  { // Afterglow — dark periwinkle + amber-gold
-    dark: createPalette('#484399','#E8AC2D'),
-    light: createPalette('#FFF4D6','#484399')
+  // ── BAMBOO & GROVE ──
+  { // Bamboo — deep forest + pale leaf
+    dark: createPalette('#3e5d38','#e8f0e2'),
+    light: createPalette('#f3f7f1','#3e5d38')
+  },
+  { // Moss Garden — muted grove + soft fern
+    dark: createPalette('#4a6b42','#f3f7f1'),
+    light: createPalette('#f5f8f2','#3e5d38')
+  },
+  // ── STONE & RAIN ──
+  { // Rainstone — dark slate + cool mist
+    dark: createPalette('#3a4347','#e4eaed'),
+    light: createPalette('#f1f4f5','#3a4347')
+  },
+  { // Wet Granite — charcoal + pale silver
+    dark: createPalette('#4a565c','#f1f4f5'),
+    light: createPalette('#f3f5f6','#3a4347')
   }
 ];
 
