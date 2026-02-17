@@ -11,8 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--sage:#7a9a7e;--sage-dark:#5c7e60;--sage-light:#a3bfa6;--sage-pale:#c8daca;--sage-faint:#e2ede3;--bg:#EBDCB8;--ink:#4a6b4e;--red:#1D2545;--red-light:#1D254540}
-  body[data-theme='dark']{--bg:#1D2545;--ink:#d6ccb7;--sage:#7d8f82;--sage-dark:#9fb2a3;--sage-light:#8fa396;--sage-pale:#5d6d63;--sage-faint:#2d332f;--red:#E8DFC5;--red-light:#E8DFC533}
+  :root{--sage:#7a9a7e;--sage-dark:#5c7e60;--sage-light:#a3bfa6;--sage-pale:#c8daca;--sage-faint:#e2ede3;--bg:#EBDCB8;--ink:#4a6b4e;--red:#1D2545;--red-light:#1D254540;--vizIntensity:1.0;--vizDark:1.0;--vizLight:1.35;--vizFloor:0.14}
+  body[data-theme='dark']{--bg:#1D2545;--ink:#d6ccb7;--sage:#7d8f82;--sage-dark:#9fb2a3;--sage-light:#8fa396;--sage-pale:#5d6d63;--sage-faint:#2d332f;--red:#E8DFC5;--red-light:#E8DFC533;--vizFloor:0.08}
   html,body{height:100%;overflow:hidden}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased;transition:background-color 1s ease,color 1s ease}
 
@@ -101,8 +101,8 @@
   /* Birds */
   .bird{position:absolute;opacity:0;animation:bf linear forwards}
   .bird svg{width:100%;height:100%;overflow:visible}
-  .bird .wing{fill:none;stroke:var(--red);stroke-width:1.55;stroke-linecap:round;stroke-linejoin:miter}
-  .bird{--bop1:.12;--bop2:.08;--bop3:.04}
+  .bird .wing{fill:none;stroke:var(--red);stroke-width:calc(1.55 * var(--vizIntensity));stroke-linecap:round;stroke-linejoin:miter}
+  .bird{--bop1:max(var(--vizFloor),calc(.12 * var(--vizIntensity)));--bop2:max(var(--vizFloor),calc(.08 * var(--vizIntensity)));--bop3:max(var(--vizFloor),calc(.04 * var(--vizIntensity)))}
   .bird .wl, .bird .wr{
     transform-origin:10px 6px;
     -webkit-transform-origin:10px 6px;
@@ -113,42 +113,42 @@
   @keyframes wing-l{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(8deg)}}
   @keyframes wing-r{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-8deg)}}
   body:not([data-theme='dark']) .bird{mix-blend-mode:multiply;--bop1:.18;--bop2:.12;--bop3:.06}
-  body:not([data-theme='dark']) .bird .wing{stroke-width:1.85}
+  body:not([data-theme='dark']) .bird .wing{stroke-width:calc(1.85 * (var(--vizIntensity) / var(--vizLight)))}
 
   /* Seeds */
   .sd{position:absolute;opacity:0;animation:sf linear forwards}
   .sd svg{width:100%;height:100%}
-  .sd .sp{fill:none;stroke:var(--red);stroke-width:.8;stroke-linecap:round}
-  .sd .spd{fill:var(--red);opacity:.12}
-  @keyframes sf{0%{opacity:0;transform:translate(0,0) rotate(0)}5%{opacity:.12}50%{opacity:.08}95%{opacity:.04}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot))}}
+  .sd .sp{fill:none;stroke:var(--red);stroke-width:calc(.8 * var(--vizIntensity));stroke-linecap:round}
+  .sd .spd{fill:var(--red);opacity:calc(.12 * var(--vizIntensity))}
+  @keyframes sf{0%{opacity:0;transform:translate(0,0) rotate(0)}5%{opacity:max(var(--vizFloor),calc(.12 * var(--vizIntensity)))}50%{opacity:max(var(--vizFloor),calc(.08 * var(--vizIntensity)))}95%{opacity:max(var(--vizFloor),calc(.04 * var(--vizIntensity)))}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot))}}
 
   /* Wind spirals */
   .spiral{position:absolute;opacity:0;animation:sp-drift linear forwards}
   .spiral svg{width:100%;height:100%}
-  .spiral .sw{fill:none;stroke:var(--red);stroke-width:.8;stroke-linecap:round}
-  @keyframes sp-drift{0%{opacity:0;transform:translateX(0) translateY(0) rotate(0)}5%{opacity:.10}50%{opacity:.07;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) rotate(180deg)}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(360deg)}}
+  .spiral .sw{fill:none;stroke:var(--red);stroke-width:calc(.8 * var(--vizIntensity));stroke-linecap:round}
+  @keyframes sp-drift{0%{opacity:0;transform:translateX(0) translateY(0) rotate(0)}5%{opacity:max(var(--vizFloor),calc(.10 * var(--vizIntensity)))}50%{opacity:max(var(--vizFloor),calc(.07 * var(--vizIntensity)));transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) rotate(180deg)}95%{opacity:max(var(--vizFloor),calc(.03 * var(--vizIntensity)))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(360deg)}}
 
   /* Crane wings */
   .crane{position:absolute;opacity:0;animation:cr-drift linear forwards}
   .crane svg{width:100%;height:100%}
-  .crane .cw{fill:none;stroke:var(--red);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
-  @keyframes cr-drift{0%{opacity:0;transform:translateX(0) translateY(0) scale(.95)}8%{opacity:.11}50%{opacity:.07;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) scale(1)}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) scale(1.03)}}
+  .crane .cw{fill:none;stroke:var(--red);stroke-width:calc(1.1 * var(--vizIntensity));stroke-linecap:round;stroke-linejoin:round}
+  @keyframes cr-drift{0%{opacity:0;transform:translateX(0) translateY(0) scale(.95)}8%{opacity:max(var(--vizFloor),calc(.11 * var(--vizIntensity)))}50%{opacity:max(var(--vizFloor),calc(.07 * var(--vizIntensity)));transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) scale(1)}95%{opacity:max(var(--vizFloor),calc(.03 * var(--vizIntensity)))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) scale(1.03)}}
 
   /* Cloud wisps */
   .cloud{position:absolute;opacity:0;animation:cl-drift linear forwards}
   .cloud svg{width:100%;height:100%}
-  .cloud .cl{fill:none;stroke:var(--red);stroke-width:.9;stroke-linecap:round;stroke-linejoin:round}
-  @keyframes cl-drift{0%{opacity:0;transform:translateX(0)}8%{opacity:.10}50%{opacity:.06;transform:translateX(calc(var(--tx)*.5))}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx))}}
+  .cloud .cl{fill:none;stroke:var(--red);stroke-width:calc(.9 * var(--vizIntensity));stroke-linecap:round;stroke-linejoin:round}
+  @keyframes cl-drift{0%{opacity:0;transform:translateX(0)}8%{opacity:max(var(--vizFloor),calc(.10 * var(--vizIntensity)))}50%{opacity:max(var(--vizFloor),calc(.06 * var(--vizIntensity)));transform:translateX(calc(var(--tx)*.5))}95%{opacity:max(var(--vizFloor),calc(.03 * var(--vizIntensity)))}100%{opacity:0;transform:translateX(var(--tx))}}
 
 
   /* Koi Fish */
   .koi{position:absolute;opacity:0;will-change:opacity}
   .koi-svg{width:100%;height:auto;overflow:visible;display:block}
   .koi .kv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
-  .koi-body{stroke-width:1.8;opacity:.14}
-  .koi-tail{stroke-width:1.5;opacity:.12}
-  .koi-fin{stroke-width:1.2;opacity:.10}
-  .koi-eye{fill:var(--red);opacity:.10}
+  .koi-body{stroke-width:calc(1.8 * var(--vizIntensity));opacity:calc(.14 * var(--vizIntensity))}
+  .koi-tail{stroke-width:calc(1.5 * var(--vizIntensity));opacity:calc(.12 * var(--vizIntensity))}
+  .koi-fin{stroke-width:calc(1.2 * var(--vizIntensity));opacity:calc(.10 * var(--vizIntensity))}
+  .koi-eye{fill:var(--red);opacity:calc(.10 * var(--vizIntensity))}
   @keyframes koi-drift{0%{opacity:0}10%{opacity:.28}50%{opacity:.2}95%{opacity:.08}100%{opacity:0}}
 
   /* Ink Droplet */
@@ -163,9 +163,9 @@
   /* Cherry Blossom */
   .blossom{position:absolute;opacity:0;animation:blossom-drift linear forwards}
   .blossom svg{width:100%;height:100%}
-  .blossom .bv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round;stroke-width:1.15}
+  .blossom .bv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round;stroke-width:calc(1.15 * var(--vizIntensity))}
   @keyframes blossom-fall{0%{transform:translateY(0) rotate(0) translateX(0)}25%{transform:translateY(12px) rotate(15deg) translateX(8px)}50%{transform:translateY(26px) rotate(-10deg) translateX(-6px)}75%{transform:translateY(38px) rotate(20deg) translateX(10px)}100%{transform:translateY(0) rotate(0) translateX(0)}}
-  @keyframes blossom-drift{0%{opacity:0;transform:translateX(0) translateY(0)}10%{opacity:.18}60%{opacity:.12;transform:translateX(calc(var(--tx)*.6)) translateY(calc(var(--ty)*.6))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty))}}
+  @keyframes blossom-drift{0%{opacity:0;transform:translateX(0) translateY(0)}10%{opacity:max(var(--vizFloor),calc(.18 * var(--vizIntensity)))}60%{opacity:max(var(--vizFloor),calc(.12 * var(--vizIntensity)));transform:translateX(calc(var(--tx)*.6)) translateY(calc(var(--ty)*.6))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty))}}
 
   /* Feather */
   .feather{
@@ -186,8 +186,8 @@
   .feather .fv{stroke:var(--red);fill:none;stroke-linecap:round;stroke-linejoin:round}
   @keyframes feather-fall{
     from{transform:translate3d(var(--x0,0px),-12vh,0);opacity:0}
-    12%{opacity:var(--fo,.12)}
-    68%{opacity:var(--fo,.12)}
+    12%{opacity:max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity)))}
+    68%{opacity:max(var(--vizFloor),calc(var(--fo,.12) * var(--vizIntensity)))}
     to{transform:translate3d(var(--x0,0px),112vh,0);opacity:0}
   }
   @keyframes feather-sway{
@@ -203,12 +203,12 @@
   .brush svg{width:100%;height:100%}
   .brush svg path{stroke-linecap:round;fill:none}
   .brush .br{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
-  @keyframes brush-sweep{0%{stroke-dashoffset:120;opacity:0}15%{opacity:.10}50%{stroke-dashoffset:0;opacity:.07}85%{opacity:.10}100%{stroke-dashoffset:-120;opacity:0}}
+  @keyframes brush-sweep{0%{stroke-dashoffset:120;opacity:0}15%{opacity:calc(.10 * var(--vizIntensity))}50%{stroke-dashoffset:0;opacity:calc(.07 * var(--vizIntensity))}85%{opacity:calc(.10 * var(--vizIntensity))}100%{stroke-dashoffset:-120;opacity:0}}
   @keyframes brush-drift{
     0%{opacity:0;transform:translateX(0) translateY(0) rotate(0deg)}
-    12%{opacity:.2}
+    12%{opacity:max(var(--vizFloor),calc(.2 * var(--vizIntensity)))}
     25%{transform:translateX(var(--mx1)) translateY(var(--my1)) rotate(var(--r1))}
-    50%{opacity:.18;transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
+    50%{opacity:max(var(--vizFloor),calc(.18 * var(--vizIntensity)));transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
     75%{transform:translateX(var(--mx3)) translateY(var(--my3)) rotate(var(--r3))}
     100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r4))}
   }
@@ -231,8 +231,8 @@
     left:0;
     top:0;
     width:var(--sw,42px);
-    height:2px;
-    border-radius:2px;
+    height:calc(2px * var(--vizIntensity));
+    border-radius:calc(2px * var(--vizIntensity));
     background:currentColor;
     opacity:0;
     transform:translate(var(--sx,0),var(--sy,0)) rotate(var(--sa,22deg));
@@ -240,12 +240,12 @@
     animation:star-shoot var(--sdur,2200ms) ease-in-out forwards;
   }
   @keyframes stars-in{from{opacity:0}to{opacity:1}}
-  @keyframes star-breathe{from{opacity:var(--so,.08)}to{opacity:var(--sp,.2)}}
+  @keyframes star-breathe{from{opacity:max(var(--vizFloor),var(--so,.08))}to{opacity:max(var(--vizFloor),var(--sp,.2))}}
   @keyframes star-shoot{
     0%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scaleX(.3)}
-    10%{opacity:.16}
-    40%{opacity:.12;transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
-    80%{opacity:.06;transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
+    10%{opacity:max(var(--vizFloor),calc(.16 * var(--vizIntensity)))}
+    40%{opacity:max(var(--vizFloor),calc(.12 * var(--vizIntensity)));transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
+    80%{opacity:max(var(--vizFloor),calc(.06 * var(--vizIntensity)));transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
     100%{opacity:0;transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa)) scaleX(.2)}
   }
 
@@ -266,8 +266,8 @@
   /* Golden Bee Hover */
   .bee{position:absolute;opacity:0;will-change:transform,opacity;filter:blur(.2px)}
   .bee svg{width:100%;height:100%}
-  .bee .bz{fill:color-mix(in srgb,var(--red) 70%,#000 30%);opacity:.28;stroke:none}
-  .bee .bzo{fill:none;stroke:color-mix(in srgb,var(--red) 68%,#000 32%);stroke-width:1;opacity:.22}
+  .bee .bz{fill:color-mix(in srgb,var(--red) 70%,#000 30%);opacity:calc(.28 * var(--vizIntensity));stroke:none}
+  .bee .bzo{fill:none;stroke:color-mix(in srgb,var(--red) 68%,#000 32%);stroke-width:calc(1 * var(--vizIntensity));opacity:calc(.22 * var(--vizIntensity))}
   .bee-trail{position:absolute;inset:0;pointer-events:none}
   .bee-trail canvas{width:100%;height:100%;display:block}
 
@@ -320,12 +320,24 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.6";
+const BUILD = "dev-0.1.7";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
+let vizIntensityNum = 1;
+let vizOpacityFloor = 0.14;
+
+function updateVizIntensityCache(theme) {
+  const cs = getComputedStyle(document.documentElement);
+  const darkVal = parseFloat(cs.getPropertyValue('--vizDark')) || 1;
+  const lightVal = parseFloat(cs.getPropertyValue('--vizLight')) || 1.35;
+  vizIntensityNum = theme === 'dark' ? darkVal : lightVal;
+  vizOpacityFloor = theme === 'dark' ? 0.08 : 0.14;
+}
 
 function applyTheme(theme) {
   document.body.setAttribute('data-theme', theme);
+  document.documentElement.style.setProperty('--vizIntensity', theme === 'dark' ? 'var(--vizDark)' : 'var(--vizLight)');
+  updateVizIntensityCache(theme);
   if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#1d1a16' : '#EBDCB8');
 }
 
@@ -454,9 +466,22 @@ function mobDist(basePx) { return basePx * V.distScale; }
 // Clamp opacity
 function mobOp(val, nearSafe) { return Math.min(nearSafe ? V.opSafe : V.opMax, val); }
 
-const VISUAL_INTENSITY = [1.0, 1.5, 2.3][TIER];
-const scaledCount = n => Math.max(1, Math.round(n * VISUAL_INTENSITY) + V.countOffset);
-const scaledInterval = n => Math.max([900, 650, 350][TIER], Math.round(n / VISUAL_INTENSITY * V.spawnScale));
+const DENSITY_SCALE = [1.0, 1.5, 2.3][TIER];
+const scaledCount = n => Math.max(1, Math.round(n * DENSITY_SCALE) + V.countOffset);
+const scaledInterval = n => Math.max([900, 650, 350][TIER], Math.round(n / DENSITY_SCALE * V.spawnScale));
+
+// VISUAL_INTENSITY system ensures cross-theme visibility consistency
+// without altering animation behavior.
+function vizOpacity(base, allowZero=false) {
+  if (allowZero && base <= 0) return 0;
+  return Math.min(1, Math.max(vizOpacityFloor, base * vizIntensityNum));
+}
+function vizAlpha(base) {
+  return Math.min(1, Math.max(0, base * vizIntensityNum));
+}
+function vizWidth(base) {
+  return Math.max(0, base * vizIntensityNum);
+}
 
 // ============ VISIBILITY / LIFECYCLE CLEANUP ============
 // Works across Safari, Chrome, Samsung Internet, Firefox
@@ -574,10 +599,10 @@ function renderBeeTrail(now){
     const age=now-p.t;
     if(age>p.life){ beeTrailPoints.splice(i,1); continue; }
     const f=age/p.life;
-    const a=0.16*(1-Math.pow(f,1.3));
+    const a=vizAlpha(0.16*(1-Math.pow(f,1.3)));
     if(a<=0) continue;
     beeTrailCtx.globalAlpha=a;
-    const r=((i%5)===0?1.25:1.6);
+    const r=vizWidth(((i%5)===0?1.25:1.6));
     beeTrailCtx.beginPath();
     beeTrailCtx.arc(p.x,p.y,r,0,Math.PI*2);
     beeTrailCtx.fill();
@@ -801,8 +826,8 @@ function spawnStars() {
     s.style.top=y.toFixed(1)+'px';
     s.style.width=size+'px';
     s.style.height=size+'px';
-    s.style.setProperty('--so',base.toFixed(3));
-    s.style.setProperty('--sp',peak.toFixed(3));
+    s.style.setProperty('--so',vizOpacity(base,true).toFixed(3));
+    s.style.setProperty('--sp',vizOpacity(peak,true).toFixed(3));
     s.style.setProperty('--sd',dur.toFixed(2)+'s');
     s.style.setProperty('--delay',delay.toFixed(2)+'s');
     s.style.setProperty('--gs','1');
@@ -826,12 +851,12 @@ function startStars() {
     const base=parseFloat(getComputedStyle(one).getPropertyValue('--so'))||0.08;
     const bump=0.06;
     const next=Math.min(0.22,base+bump);
-    one.style.setProperty('--sp',next.toFixed(3));
+    one.style.setProperty('--sp',vizOpacity(next,true).toFixed(3));
     one.style.setProperty('--gs','1.08');
     const hold=900+Math.random()*500;
     const tBack=setTimeout(()=>{
       if(!one.isConnected) return;
-      one.style.setProperty('--sp',Math.min(0.22,base+(0.04+Math.random()*0.04)).toFixed(3));
+      one.style.setProperty('--sp',vizOpacity(Math.min(0.22,base+(0.04+Math.random()*0.04)),true).toFixed(3));
       one.style.setProperty('--gs','1');
     },hold);
     visTimers.push(tBack);
@@ -1082,8 +1107,8 @@ function drawSandPathsProgressive(ctx, paths, opts){
   if(opts.reduceMotion){
     // Draw everything immediately
     for(const seg of queue){
-      ctx.strokeStyle=sandColor(Math.max(0.01,seg.alpha));
-      ctx.lineWidth=seg.w;ctx.lineCap='round';
+      ctx.strokeStyle=sandColor(vizAlpha(Math.max(0.01,seg.alpha)));
+      ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
     }
     return;
@@ -1103,8 +1128,8 @@ function drawSandPathsProgressive(ctx, paths, opts){
     // Draw all segments up to current progress point
     while(drawn<target && drawn<total){
       const seg=queue[drawn];
-      ctx.strokeStyle=sandColor(Math.max(0.01,seg.alpha));
-      ctx.lineWidth=seg.w;ctx.lineCap='round';
+      ctx.strokeStyle=sandColor(vizAlpha(Math.max(0.01,seg.alpha)));
+      ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
       drawn++;
     }
@@ -1247,8 +1272,8 @@ function startRippleSystem() {
       const radius=r.radiusStart+(r.radiusEnd-r.radiusStart)*(1-Math.pow(1-t,2));
       const opacity=r.opacityStart*(1-Math.pow(t,1.4));
       if(opacity<=0) continue;
-      ctx.globalAlpha=opacity;
-      ctx.lineWidth=r.lineWidth;
+      ctx.globalAlpha=vizAlpha(opacity);
+      ctx.lineWidth=vizWidth(r.lineWidth);
       ctx.beginPath();
       ctx.arc(r.x,r.y,radius,0,Math.PI*2);
       ctx.stroke();
@@ -1266,11 +1291,11 @@ function startRippleSystem() {
         else if(u>0.88) sa*=(1-u)/0.12;
         if(sa>0){
           const rr=stone.r*(0.9+0.15*Math.min(dpr,2));
-          ctx.globalAlpha=sa;
+          ctx.globalAlpha=vizAlpha(sa);
           ctx.beginPath();
           ctx.arc(x,y,rr,0,Math.PI*2);
           ctx.fill();
-          ctx.globalAlpha=sa*0.35;
+          ctx.globalAlpha=vizAlpha(sa*0.35);
           ctx.beginPath();
           ctx.arc(x+1,y+1,Math.max(1.2,rr*0.52),0,Math.PI*2);
           ctx.fill();
@@ -1349,7 +1374,7 @@ function spawnSerpent() {
   svg.style.overflow='visible';
   const path=document.createElementNS('http://www.w3.org/2000/svg','path');
   path.classList.add('sv');
-  path.setAttribute('stroke-width','1.8');
+  path.setAttribute('stroke-width',vizWidth(1.8).toFixed(3));
   svg.appendChild(path);
   // Tiny head dot
   const head=document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -1357,7 +1382,7 @@ function spawnSerpent() {
   head.setAttribute('r','2');
   head.setAttribute('stroke-width','0');
   head.style.fill='var(--red)';
-  head.style.opacity='.1';
+  head.style.opacity=vizOpacity(0.1,true).toFixed(3);
   svg.appendChild(head);
   s.appendChild(svg);
   VIS.appendChild(s);
@@ -1404,7 +1429,7 @@ function spawnSerpent() {
     let op=V.opMax;
     if(p<.08) op=V.opMax*(p/.08);
     else if(p>.92) op=V.opMax*((1-p)/.08);
-    s.style.opacity=Math.max(0,op).toFixed(3);
+    s.style.opacity=vizOpacity(Math.max(0,op),true).toFixed(3);
 
     s._raf=requestAnimationFrame(step);
   };
@@ -1492,7 +1517,7 @@ function spawnBee() {
     let op=V.opMax;
     if(p<.1) op=V.opMax*(p/.1);
     else if(p>.85) op=V.opMax*((1-p)/.15);
-    b.style.opacity=Math.max(0,op).toFixed(3);
+    b.style.opacity=vizOpacity(Math.max(0,op),true).toFixed(3);
     b.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
     const cx=x+sz*.5, cy=y+sz*.5;
     const dist=Math.hypot(cx-lastDotX,cy-lastDotY);
@@ -1541,8 +1566,8 @@ function spawnFirefly() {
 
   f.style.width=sz+'px';f.style.height=sz+'px';
   f.style.left=x+'px';f.style.top=y+'px';
-  f.style.setProperty('--fo',baseOp.toFixed(3));
-  f.style.setProperty('--fp',peakOp.toFixed(3));
+  f.style.setProperty('--fo',vizOpacity(baseOp,true).toFixed(3));
+  f.style.setProperty('--fp',vizOpacity(peakOp,true).toFixed(3));
   f.style.animation=`firefly-glow ${dur}s ease-in-out infinite`;
   f.style.animationDelay=(Math.random()*8)+'s';
 
@@ -1759,7 +1784,7 @@ function spawnKoi() {
     let op=V.opMax;
     if(p<.1) op=V.opMax*(p/.1);
     else if(p>.9) op=V.opMax*((1-p)/.1);
-    k.style.opacity=Math.max(0,op).toFixed(3);
+    k.style.opacity=vizOpacity(Math.max(0,op),true).toFixed(3);
 
     k._raf=requestAnimationFrame(step);
   };
@@ -1792,7 +1817,7 @@ function spawnInk() {
   d.style.setProperty('--tx',tx+'px');
   d.style.setProperty('--ty',ty+'px');
   d.style.animationDuration=dur+'s';
-  d.innerHTML='<svg viewBox="0 0 60 60"><circle class="iv" stroke-width="1.2" cx="30" cy="30" r="0" style="animation:ink-drop 6.25s ease-in-out infinite"/><circle class="iv" stroke-width=".72" cx="30" cy="30" r="0" style="animation:ripple1 6.25s ease-in-out infinite;animation-delay:1s"/><circle class="iv" stroke-width=".5" cx="30" cy="30" r="0" style="animation:ripple2 6.25s ease-in-out infinite;animation-delay:2s"/></svg>';
+  d.innerHTML='<svg viewBox="0 0 60 60"><circle class="iv" stroke-width="'+vizWidth(1.2).toFixed(3)+'" cx="30" cy="30" r="0" style="animation:ink-drop 6.25s ease-in-out infinite"/><circle class="iv" stroke-width="'+vizWidth(0.72).toFixed(3)+'" cx="30" cy="30" r="0" style="animation:ripple1 6.25s ease-in-out infinite;animation-delay:1s"/><circle class="iv" stroke-width="'+vizWidth(0.5).toFixed(3)+'" cx="30" cy="30" r="0" style="animation:ripple2 6.25s ease-in-out infinite;animation-delay:2s"/></svg>';
   VIS.appendChild(d);
   setTimeout(()=>fadeOutAndRemove(d,900),(dur+1)*1e3);
 }
@@ -1822,7 +1847,7 @@ function spawnBlossom() {
   b.style.setProperty('--tx',tx+'px');
   b.style.setProperty('--ty',ty+'px');
   b.style.animationDuration=dur+'s';
-  b.innerHTML='<svg viewBox="0 0 22 22" style="animation:blossom-fall 6.5s ease-in-out infinite"><path class="bv" stroke-width=".9" d="M11 1 C12 4, 14 5, 11 8 M11 8 C15 7, 17 5, 20 7 M11 8 C14 10, 15 13, 13 15 M11 8 C8 10, 7 13, 9 15 M11 8 C7 7, 5 5, 2 7 M11 8 C10 4, 8 5, 11 1"/><circle cx="11" cy="8" r="1.3" fill="currentColor" fill-opacity=".2" stroke="none"/></svg>';
+  b.innerHTML='<svg viewBox="0 0 22 22" style="animation:blossom-fall 6.5s ease-in-out infinite"><path class="bv" stroke-width="'+vizWidth(0.9).toFixed(3)+'" d="M11 1 C12 4, 14 5, 11 8 M11 8 C15 7, 17 5, 20 7 M11 8 C14 10, 15 13, 13 15 M11 8 C8 10, 7 13, 9 15 M11 8 C7 7, 5 5, 2 7 M11 8 C10 4, 8 5, 11 1"/><circle cx="11" cy="8" r="1.3" fill="currentColor" fill-opacity="'+vizAlpha(0.2).toFixed(3)+'" stroke="none"/></svg>';
   VIS.appendChild(b);
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
@@ -1851,8 +1876,8 @@ function spawnFeather() {
   f.style.setProperty('--p',p);
   f.style.setProperty('--rot',rot);
   f.style.setProperty('--t',dur.toFixed(2)+'s');
-  f.style.setProperty('--fo','.12');
-  f.innerHTML='<svg viewBox="0 0 20 30"><path class="fv" stroke-width="1.05" d="M10 2 C8 9,8 17,10 28"/><path class="fv" stroke-width=".85" d="M10 7 L6.2 5.8"/><path class="fv" stroke-width=".85" d="M10 10.4 L6 9.6"/><path class="fv" stroke-width=".85" d="M10 13.8 L5.9 13.5"/><path class="fv" stroke-width=".85" d="M10 17.2 L6.1 17.5"/><path class="fv" stroke-width=".85" d="M10 20.8 L6.6 21.7"/><path class="fv" stroke-width=".85" d="M10 7.8 L13.6 6.7"/><path class="fv" stroke-width=".85" d="M10 11.2 L13.8 10.6"/><path class="fv" stroke-width=".85" d="M10 14.8 L14 15.0"/><path class="fv" stroke-width=".85" d="M10 18.4 L13.7 19.2"/><path class="fv" stroke-width=".85" d="M10 22 L13.2 23.2"/></svg>';
+  f.style.setProperty('--fo',vizOpacity(0.12,true).toFixed(3));
+  f.innerHTML='<svg viewBox="0 0 20 30"><path class="fv" stroke-width="'+vizWidth(1.05).toFixed(3)+'" d="M10 2 C8 9,8 17,10 28"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 7 L6.2 5.8"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 10.4 L6 9.6"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 13.8 L5.9 13.5"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 17.2 L6.1 17.5"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 20.8 L6.6 21.7"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 7.8 L13.6 6.7"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 11.2 L13.8 10.6"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 14.8 L14 15.0"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 18.4 L13.7 19.2"/><path class="fv" stroke-width="'+vizWidth(0.85).toFixed(3)+'" d="M10 22 L13.2 23.2"/></svg>';
   const featherSVG=f.querySelector('svg');
   if(featherSVG) featherSVG.style.animationDelay=(-Math.random()*4).toFixed(2)+'s';
   VIS.appendChild(f);
@@ -1902,11 +1927,11 @@ function spawnBrush() {
   b.style.setProperty('--r4',r4);
   b.style.animationDuration=dur+'s';
   const lines=2+Math.floor(Math.random()*3); // 2-4 parallel wave lines
-  const sw=1.7;
+  const sw=vizWidth(1.7);
   const color='var(--red)';
   const sweepDur=(12+Math.random()*10).toFixed(1);
   const sweepDelay=(Math.random()*3).toFixed(1);
-  b.innerHTML='<svg viewBox="0 0 100 24">'+Array.from({length:lines}).map((_,i)=>{const offset=6+i*6+(Math.random()*2-1)*2;const amp=4+Math.random()*3;const path=`M2 ${offset.toFixed(2)} C 18 ${(offset-amp).toFixed(2)}, 34 ${(offset+amp).toFixed(2)}, 50 ${offset.toFixed(2)} C 66 ${(offset-amp).toFixed(2)}, 82 ${(offset+amp).toFixed(2)}, 98 ${offset.toFixed(2)}`;const opacity=Math.max(0.06,0.12-i*0.02);return '<path class="br" d="'+path+'" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="120" opacity="'+opacity.toFixed(2)+'" style="animation:brush-sweep '+sweepDur+'s ease-in-out infinite;animation-delay:'+sweepDelay+'s;"/>';}).join('')+'</svg>';
+  b.innerHTML='<svg viewBox="0 0 100 24">'+Array.from({length:lines}).map((_,i)=>{const offset=6+i*6+(Math.random()*2-1)*2;const amp=4+Math.random()*3;const path=`M2 ${offset.toFixed(2)} C 18 ${(offset-amp).toFixed(2)}, 34 ${(offset+amp).toFixed(2)}, 50 ${offset.toFixed(2)} C 66 ${(offset-amp).toFixed(2)}, 82 ${(offset+amp).toFixed(2)}, 98 ${offset.toFixed(2)}`;const opacity=vizAlpha(Math.max(0.06,0.12-i*0.02));return '<path class="br" d="'+path+'" stroke="'+color+'" stroke-width="'+sw.toFixed(3)+'" stroke-dasharray="120" opacity="'+opacity.toFixed(3)+'" style="animation:brush-sweep '+sweepDur+'s ease-in-out infinite;animation-delay:'+sweepDelay+'s;"/>';}).join('')+'</svg>';
   VIS.appendChild(b);
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
