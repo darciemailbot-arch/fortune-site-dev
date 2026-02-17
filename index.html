@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.14";
+const BUILD = "dev-0.1.15";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -371,6 +371,7 @@ function applyTheme(theme) {
   document.documentElement.style.setProperty('--vizIntensity', theme === 'dark' ? 'var(--vizDark)' : 'var(--vizLight)');
   updateVizIntensityCache(theme);
   if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#1d1a16' : '#EBDCB8');
+  window.dispatchEvent(new Event('theme-changed'));
 }
 
 function initTheme() {
@@ -614,6 +615,28 @@ function inSafe(x, y, s) {
   const vw=window.innerWidth, vh=window.innerHeight, cx=vw/2, cy=vh/2;
   const sw=Math.min(360,vw*.85), sh=vh*.55;
   return x>cx-sw/2-s && x<cx+sw/2 && y>cy-sh/2-s && y<cy+sh/2;
+}
+
+function getSandReadZone(w,h,pad=34){
+  const ids=['fortune','nums','btn'];
+  let left=Infinity, top=Infinity, right=-Infinity, bottom=-Infinity;
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(!el) continue;
+    const r=el.getBoundingClientRect();
+    if(!(r.width>0 && r.height>0)) continue;
+    left=Math.min(left,r.left);
+    top=Math.min(top,r.top);
+    right=Math.max(right,r.right);
+    bottom=Math.max(bottom,r.bottom);
+  }
+  if(!isFinite(left) || !isFinite(top) || !isFinite(right) || !isFinite(bottom)) return null;
+  const x=Math.max(0,left-pad);
+  const y=Math.max(0,top-pad);
+  const x2=Math.min(w,right+pad);
+  const y2=Math.min(h,bottom+pad);
+  if(x2<=x || y2<=y) return null;
+  return {x,y,w:x2-x,h:y2-y};
 }
 
 function fadeOutAndRemove(el, ms=900) {
@@ -1227,6 +1250,18 @@ function buildSandGardenPaths(w,h,stones,baseAngleDeg,spacing){
 
 function drawSandPathsProgressive(ctx, paths, opts){
   if(!paths.length) return;
+  const beginReadZoneClip=()=>{
+    if(!opts.safeRect) return false;
+    const sr=opts.safeRect;
+    if(!(sr.w>0 && sr.h>0)) return false;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0,0,opts.canvasW,opts.canvasH);
+    ctx.rect(sr.x,sr.y,sr.w,sr.h);
+    ctx.clip('evenodd');
+    return true;
+  };
+  const endReadZoneClip=(active)=>{ if(active) ctx.restore(); };
   // Flatten all segments into a single drawing queue
   const queue=[];
   for(const p of paths){
@@ -1245,11 +1280,13 @@ function drawSandPathsProgressive(ctx, paths, opts){
 
   if(opts.reduceMotion){
     // Draw everything immediately
+    const clipped=beginReadZoneClip();
     for(const seg of queue){
       ctx.strokeStyle=sandColor(vizAlpha(Math.max(0.01,seg.alpha)));
       ctx.lineWidth=vizWidth(seg.w);ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
     }
+    endReadZoneClip(clipped);
     return;
   }
 
@@ -1268,6 +1305,7 @@ function drawSandPathsProgressive(ctx, paths, opts){
 
   const tick=()=>{
     if(activeVisual!=='sand') return;
+    const clipped=beginReadZoneClip();
     const elapsed=performance.now()-t0;
     const progress=Math.min(1,elapsed/DURATION);
     const target=Math.floor(progress*total);
@@ -1296,6 +1334,7 @@ function drawSandPathsProgressive(ctx, paths, opts){
       const wrapper={_raf:raf};
       wrapper._stop=()=>cancelAnimationFrame(raf);
     }
+    endReadZoneClip(clipped);
   };
   requestAnimationFrame(tick);
 }
@@ -1306,7 +1345,6 @@ function startSandGarden() {
   VIS.appendChild(sand);
   let sandInit=initSandCanvas(sand);
   const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isDark=document.body.getAttribute('data-theme')==='dark';
   const angles=[-12,-8,-4,0,4,8,12];
   let idx;
   do { idx=Math.floor(Math.random()*angles.length); } while (angles.length>1 && idx===lastSandAngleIdx);
@@ -1317,19 +1355,38 @@ function startSandGarden() {
     sand.textContent='';
     sandInit=initSandCanvas(sand);
     const {ctx,w,h}=sandInit;
+    const isDark=document.body.getAttribute('data-theme')==='dark';
+    const safeRect=getSandReadZone(w,h,36);
     ctx.clearRect(0,0,w,h); // start blank
     const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
     const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
     drawSandPathsProgressive(ctx,paths,{
       alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
       width:0.8+Math.random()*0.4,
-      reduceMotion:prefersReduced
+      reduceMotion:prefersReduced,
+      safeRect,
+      canvasW:w,
+      canvasH:h
     });
   };
   drawCurrent();
   const onResize=()=>{ drawCurrent(); };
+  const onOrientation=()=>{ drawCurrent(); };
+  const onFortuneRendered=()=>{ drawCurrent(); };
+  const onThemeChanged=()=>{ drawCurrent(); };
   window.addEventListener('resize',onResize,{passive:true});
-  sand._stop=()=>window.removeEventListener('resize',onResize);
+  window.addEventListener('orientationchange',onOrientation,{passive:true});
+  window.addEventListener('fortune-rendered',onFortuneRendered);
+  window.addEventListener('theme-changed',onThemeChanged);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=>{ if(activeVisual==='sand') drawCurrent(); }).catch(()=>{});
+  }
+  sand._stop=()=>{
+    window.removeEventListener('resize',onResize);
+    window.removeEventListener('orientationchange',onOrientation);
+    window.removeEventListener('fortune-rendered',onFortuneRendered);
+    window.removeEventListener('theme-changed',onThemeChanged);
+  };
 }
 
 function startRippleSystem() {
@@ -2315,6 +2372,7 @@ function reveal(e){
       if (!nm.includes(x)) nm.push(x);
     }
     n.textContent = nm.join('   ');
+    window.dispatchEvent(new Event('fortune-rendered'));
 
     // Set fade-in durations (match launch vibe)
     f.style.transitionDuration = `${IN_MS_F}ms, ${IN_MS_F}ms`;
