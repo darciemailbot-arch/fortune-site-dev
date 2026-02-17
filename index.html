@@ -11,10 +11,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--sage:#7a9a7e;--sage-dark:#5c7e60;--sage-light:#a3bfa6;--sage-pale:#c8daca;--sage-faint:#e2ede3;--bg:#EBDCB8;--ink:#4a6b4e;--red:#1D2545;--red-light:#1D254540;--vizIntensity:1.0;--vizDark:1.0;--vizLight:1.35;--vizFloor:0.14}
-  body[data-theme='dark']{--bg:#1D2545;--ink:#d6ccb7;--sage:#7d8f82;--sage-dark:#9fb2a3;--sage-light:#8fa396;--sage-pale:#5d6d63;--sage-faint:#2d332f;--red:#E8DFC5;--red-light:#E8DFC533;--vizFloor:0.08}
+  :root{
+    --bg-primary:#EBDCB8;
+    --text-primary:#1D2545;
+    --text-secondary:#4a6b4e;
+    --viz-strong:rgba(29,37,69,.24);
+    --viz-medium:rgba(29,37,69,.16);
+    --viz-subtle:rgba(29,37,69,.11);
+    --viz-faint:rgba(29,37,69,.08);
+    --sage:#7a9a7e;
+    --sage-dark:#5c7e60;
+    --sage-light:#a3bfa6;
+    --sage-pale:#c8daca;
+    --sage-faint:#e2ede3;
+    --bg:var(--bg-primary);
+    --ink:var(--text-secondary);
+    --red:var(--text-primary);
+    --red-light:var(--viz-faint);
+    --vizIntensity:1.0;
+    --vizDark:1.0;
+    --vizLight:1.35;
+    --vizFloor:0.14;
+  }
+  body[data-theme='dark']{--vizFloor:0.08}
   html,body{height:100%;overflow:hidden}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased;transition:background-color 1s ease,color 1s ease}
+  body.palette-transition{transition:background-color .8s ease,color .8s ease}
 
   /* Gentle theme crossfade for palette-based properties */
   .theme-toggle,.lb,.ls,.fortune,.nums,.signoff,.cookie-btn span,.cookie-btn .ck,
@@ -206,7 +228,7 @@
     transition:transform .35s ease,opacity .35s ease;
     will-change:opacity,transform
   }
-  body[data-theme='dark'] .stars{color:#e0b5ad}
+  body[data-theme='dark'] .stars{color:var(--text-primary)}
   .shooting-star{
     position:absolute;
     left:0;
@@ -335,12 +357,139 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.21";
+const BUILD = "dev-0.1.22";
 const THEME_KEY = 'fortuneTheme';
+const PALETTE_WINDOW_HOURS = 6;
+const PALETTE_SALT_KEY = 'fortunePaletteSaltV1';
+const PALETTE_CACHE_KEY = 'fortunePaletteCacheV1';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
 let vizOpacityFloor = 0.14;
+let paletteSession = null;
+let paletteTransitionArmed = false;
 if(typeof window.__BOOTSTRAP_VIZ_BOOST !== 'number') window.__BOOTSTRAP_VIZ_BOOST = 1;
+
+const PALETTES = {
+  light: [
+    { bg:'#EFE6CF', text:'#1F3A2E', text2:'#4F655A', vizStrong:'rgba(31,58,46,0.24)', vizMedium:'rgba(31,58,46,0.16)', vizSubtle:'rgba(31,58,46,0.11)', vizFaint:'rgba(31,58,46,0.08)' },
+    { bg:'#F2ECE1', text:'#27324A', text2:'#596175', vizStrong:'rgba(39,50,74,0.24)', vizMedium:'rgba(39,50,74,0.16)', vizSubtle:'rgba(39,50,74,0.11)', vizFaint:'rgba(39,50,74,0.08)' },
+    { bg:'#EFE4DA', text:'#3C2C3E', text2:'#665766', vizStrong:'rgba(60,44,62,0.24)', vizMedium:'rgba(60,44,62,0.16)', vizSubtle:'rgba(60,44,62,0.11)', vizFaint:'rgba(60,44,62,0.08)' },
+    { bg:'#E6E8E3', text:'#2A3A44', text2:'#54646F', vizStrong:'rgba(42,58,68,0.24)', vizMedium:'rgba(42,58,68,0.16)', vizSubtle:'rgba(42,58,68,0.11)', vizFaint:'rgba(42,58,68,0.08)' },
+    { bg:'#E8E6DC', text:'#2B3530', text2:'#5A645E', vizStrong:'rgba(43,53,48,0.24)', vizMedium:'rgba(43,53,48,0.16)', vizSubtle:'rgba(43,53,48,0.11)', vizFaint:'rgba(43,53,48,0.08)' }
+  ],
+  dark: [
+    { bg:'#1C2438', text:'#E6DDC6', text2:'#B8B19D', vizStrong:'rgba(230,221,198,0.24)', vizMedium:'rgba(230,221,198,0.16)', vizSubtle:'rgba(230,221,198,0.11)', vizFaint:'rgba(230,221,198,0.08)' },
+    { bg:'#1D2A26', text:'#E5DBC4', text2:'#AEBDAF', vizStrong:'rgba(229,219,196,0.24)', vizMedium:'rgba(229,219,196,0.16)', vizSubtle:'rgba(229,219,196,0.11)', vizFaint:'rgba(229,219,196,0.08)' },
+    { bg:'#1F2025', text:'#E8DFCF', text2:'#B6B1A5', vizStrong:'rgba(232,223,207,0.24)', vizMedium:'rgba(232,223,207,0.16)', vizSubtle:'rgba(232,223,207,0.11)', vizFaint:'rgba(232,223,207,0.08)' },
+    { bg:'#2B2420', text:'#EADDCB', text2:'#BDAF9E', vizStrong:'rgba(234,221,203,0.24)', vizMedium:'rgba(234,221,203,0.16)', vizSubtle:'rgba(234,221,203,0.11)', vizFaint:'rgba(234,221,203,0.08)' },
+    { bg:'#202C30', text:'#E8DEC7', text2:'#AAB9B1', vizStrong:'rgba(232,222,199,0.24)', vizMedium:'rgba(232,222,199,0.16)', vizSubtle:'rgba(232,222,199,0.11)', vizFaint:'rgba(232,222,199,0.08)' }
+  ]
+};
+
+function safeGetLS(key){
+  try { return localStorage.getItem(key); }
+  catch(_) { return null; }
+}
+
+function safeSetLS(key,val){
+  try { localStorage.setItem(key,val); }
+  catch(_) {}
+}
+
+function seededRandom(seed){
+  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453123;
+  return x - Math.floor(x);
+}
+
+function getPaletteUserSalt(){
+  const existing = parseInt(safeGetLS(PALETTE_SALT_KEY) || '', 10);
+  if(Number.isFinite(existing) && existing > 0) return existing;
+  const generated = Math.floor(Math.random() * 1000000000) + 1;
+  safeSetLS(PALETTE_SALT_KEY, String(generated));
+  return generated;
+}
+
+function localHoursSinceEpoch(nowMs){
+  const now = Number.isFinite(nowMs) ? nowMs : Date.now();
+  const offsetMs = new Date(now).getTimezoneOffset() * 60000;
+  return Math.floor((now - offsetMs) / 3600000);
+}
+
+function nextWindowBoundary(nowMs){
+  const now = new Date(Number.isFinite(nowMs) ? nowMs : Date.now());
+  const next = new Date(now.getTime());
+  next.setMinutes(0,0,0);
+  const nextHour = (Math.floor(now.getHours() / PALETTE_WINDOW_HOURS) + 1) * PALETTE_WINDOW_HOURS;
+  next.setHours(nextHour,0,0,0);
+  return next.getTime();
+}
+
+function resolvePaletteSession(){
+  const now = Date.now();
+  const userSalt = getPaletteUserSalt();
+  const windowKey = Math.floor(localHoursSinceEpoch(now) / PALETTE_WINDOW_HOURS);
+  const cachedRaw = safeGetLS(PALETTE_CACHE_KEY);
+  if(cachedRaw){
+    try{
+      const cached = JSON.parse(cachedRaw);
+      const valid =
+        cached &&
+        cached.userSalt === userSalt &&
+        cached.windowKey === windowKey &&
+        Number.isFinite(cached.expiresAt) &&
+        now < cached.expiresAt &&
+        Number.isInteger(cached.lightIndex) &&
+        Number.isInteger(cached.darkIndex) &&
+        cached.lightIndex >= 0 &&
+        cached.darkIndex >= 0 &&
+        cached.lightIndex < PALETTES.light.length &&
+        cached.darkIndex < PALETTES.dark.length;
+      if(valid) return cached;
+    }catch(_){}
+  }
+  const pick = (themeOffset, len) => {
+    const rnd = seededRandom(windowKey * 4099 + userSalt * 131 + themeOffset);
+    return Math.floor(rnd * len) % len;
+  };
+  const session = {
+    userSalt,
+    windowKey,
+    lightIndex: pick(17, PALETTES.light.length),
+    darkIndex: pick(53, PALETTES.dark.length),
+    expiresAt: nextWindowBoundary(now)
+  };
+  safeSetLS(PALETTE_CACHE_KEY, JSON.stringify(session));
+  return session;
+}
+
+function currentThemePalette(theme){
+  if(!paletteSession) paletteSession = resolvePaletteSession();
+  const list = theme === 'dark' ? PALETTES.dark : PALETTES.light;
+  const idx = theme === 'dark' ? paletteSession.darkIndex : paletteSession.lightIndex;
+  return list[idx] || list[0];
+}
+
+function applyPalette(theme){
+  const p = currentThemePalette(theme);
+  const rootStyle = document.documentElement.style;
+  rootStyle.setProperty('--bg-primary', p.bg);
+  rootStyle.setProperty('--text-primary', p.text);
+  rootStyle.setProperty('--text-secondary', p.text2);
+  rootStyle.setProperty('--viz-strong', p.vizStrong);
+  rootStyle.setProperty('--viz-medium', p.vizMedium);
+  rootStyle.setProperty('--viz-subtle', p.vizSubtle);
+  rootStyle.setProperty('--viz-faint', p.vizFaint);
+  rootStyle.setProperty('--bg', p.bg);
+  rootStyle.setProperty('--ink', p.text2);
+  rootStyle.setProperty('--red', p.text);
+  rootStyle.setProperty('--red-light', p.vizFaint);
+  rootStyle.setProperty('--sage', p.text2);
+  rootStyle.setProperty('--sage-dark', p.text);
+  rootStyle.setProperty('--sage-light', p.text2);
+  rootStyle.setProperty('--sage-pale', p.vizSubtle);
+  rootStyle.setProperty('--sage-faint', p.vizFaint);
+  return p;
+}
 
 function updateVizIntensityCache(theme) {
   const cs = getComputedStyle(document.documentElement);
@@ -351,15 +500,21 @@ function updateVizIntensityCache(theme) {
 }
 
 function applyTheme(theme) {
+  const palette = applyPalette(theme);
   document.body.setAttribute('data-theme', theme);
   document.documentElement.style.setProperty('--vizIntensity', theme === 'dark' ? 'var(--vizDark)' : 'var(--vizLight)');
   updateVizIntensityCache(theme);
-  if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#1d1a16' : '#EBDCB8');
+  if (themeMeta) themeMeta.setAttribute('content', palette.bg);
   window.dispatchEvent(new Event('theme-changed'));
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
+  if(!paletteTransitionArmed && document.body){
+    paletteTransitionArmed = true;
+    document.body.classList.add('palette-transition');
+    setTimeout(()=>document.body.classList.remove('palette-transition'),860);
+  }
+  const saved = safeGetLS(THEME_KEY);
   if (saved === 'light' || saved === 'dark') return applyTheme(saved);
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(prefersDark ? 'dark' : 'light');
@@ -368,7 +523,7 @@ function initTheme() {
 function toggleTheme() {
   const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   applyTheme(next);
-  localStorage.setItem(THEME_KEY, next);
+  safeSetLS(THEME_KEY, next);
 }
 let activeVisual = null;
 let visTimers = [];
