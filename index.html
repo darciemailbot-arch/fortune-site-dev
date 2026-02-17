@@ -149,7 +149,7 @@
   .koi-tail{stroke-width:1.5;opacity:.12}
   .koi-fin{stroke-width:1.2;opacity:.10}
   .koi-eye{fill:var(--red);opacity:.10}
-  @keyframes koi-drift{0%{opacity:0;transform:translateX(0) translateY(0) rotate(0) scaleX(var(--sx))}10%{opacity:.28}50%{opacity:.2;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) rotate(var(--rm)) scaleX(var(--sx))}95%{opacity:.08}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(calc(var(--rm)*2)) scaleX(var(--sx))}}
+  @keyframes koi-drift{0%{opacity:0}10%{opacity:.28}50%{opacity:.2}95%{opacity:.08}100%{opacity:0}}
 
   /* Ink Droplet */
   .ink{position:absolute;opacity:0;animation:ink-drift linear forwards}
@@ -320,7 +320,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.4";
+const BUILD = "dev-0.1.5";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 
@@ -1608,6 +1608,7 @@ function spawnKoi() {
   const tailFreq=4 + Math.random()*2;
   const MAX_TURN=0.035;
   const SMOOTH=0.18;
+  const SPEED_MULT=1.18;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
   k.style.width=vw+'px';
@@ -1652,7 +1653,7 @@ function spawnKoi() {
     if(document.hidden){ k._raf=requestAnimationFrame(step); return; }
     if(now-lastFrame < RAF_MIN_STEP){ k._raf=requestAnimationFrame(step); return; }
     lastFrame=now;
-    const p=(now-t0)/dur;
+    const p=(now-t0)/(dur*SPEED_MULT);
     if(p>=1){fadeOutAndRemove(k,900);return;}
 
     const hx=bezier(p,startX,cx1,cx2,endX);
