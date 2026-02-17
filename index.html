@@ -359,7 +359,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.17";
+const BUILD = "dev-0.2.18";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -1295,8 +1295,8 @@ function spawnStars() {
     const base=isDark?(0.06+Math.random()*0.10):(0.05+Math.random()*0.07);
     const peakCap=isDark?0.22:0.16;
     const peak=Math.min(peakCap, base+(0.04+Math.random()*0.04));
-    const dur=8+Math.random()*6;
-    const delay=Math.random()*6;
+    const dur=12+Math.random()*14;
+    const delay=Math.random()*12;
 
     s.style.left=x.toFixed(1)+'px';
     s.style.top=y.toFixed(1)+'px';
@@ -1307,6 +1307,8 @@ function spawnStars() {
     s.style.setProperty('--sd',dur.toFixed(2)+'s');
     s.style.setProperty('--delay',delay.toFixed(2)+'s');
     s.style.setProperty('--gs','1');
+    s.dataset.base=base.toFixed(4);
+    s.dataset.peak=peak.toFixed(4);
     layer.appendChild(s);
   }
 
@@ -1319,33 +1321,31 @@ function startStars() {
   const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(prefersReduced || !layer) return;
   let shootingActive=false;
-
-  const glint=()=>{
-    if(activeVisual!=='stars' || !layer.isConnected) return;
-    const stars=layer.querySelectorAll('.star');
-    if(!stars.length) return;
-    const one=stars[Math.floor(Math.random()*stars.length)];
-    const base=parseFloat(getComputedStyle(one).getPropertyValue('--so'))||0.08;
-    const bump=0.06;
-    const next=Math.min(0.22,base+bump);
-    one.style.setProperty('--sp',vizOpacity(next,true).toFixed(3));
-    one.style.setProperty('--gs','1.08');
-    const hold=900+Math.random()*500;
-    const tBack=setTimeout(()=>{
-      if(!one.isConnected) return;
-      one.style.setProperty('--sp',vizOpacity(Math.min(0.22,base+(0.04+Math.random()*0.04)),true).toFixed(3));
-      one.style.setProperty('--gs','1');
-    },hold);
-    visTimers.push(tBack);
+  const isDark=document.body.getAttribute('data-theme')==='dark';
+  const sparkleCap=isDark?0.22:0.16;
+  const scheduleStarPulse=(star,first=false)=>{
+    if(!star || !star.isConnected) return;
+    const wait=first ? (900+Math.random()*2200) : (5000+Math.random()*18000);
+    const tPulse=setTimeout(()=>{
+      if(activeVisual!=='stars' || !layer.isConnected || !star.isConnected) return;
+      const base=parseFloat(star.dataset.base || '') || parseFloat(getComputedStyle(star).getPropertyValue('--so')) || 0.08;
+      const bump=0.03+Math.random()*0.05;
+      star.style.setProperty('--sp',vizOpacity(Math.min(sparkleCap,base+bump),true).toFixed(3));
+      star.style.setProperty('--gs',(1.03+Math.random()*0.06).toFixed(3));
+      const hold=800+Math.random()*1200;
+      const tBack=setTimeout(()=>{
+        if(activeVisual!=='stars' || !layer.isConnected || !star.isConnected) return;
+        const settle=Math.min(sparkleCap,base+(0.018+Math.random()*0.028));
+        star.style.setProperty('--sp',vizOpacity(settle,true).toFixed(3));
+        star.style.setProperty('--gs','1');
+        scheduleStarPulse(star,false);
+      },hold);
+      visTimers.push(tBack);
+    },wait);
+    visTimers.push(tPulse);
   };
-
-  const first=12000+Math.random()*8000;
-  const tFirst=setTimeout(()=>{
-    glint();
-    const iv=setInterval(glint,12000+Math.random()*8000);
-    visTimers.push(iv);
-  },first);
-  visTimers.push(tFirst);
+  const stars=layer.querySelectorAll('.star');
+  stars.forEach(star=>scheduleStarPulse(star,true));
 
   const spawnShootingStar=()=>{
     if(activeVisual!=='stars' || !layer.isConnected || shootingActive) return;
