@@ -320,7 +320,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.11";
+const BUILD = "dev-0.1.12";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -510,6 +510,34 @@ function applySpawnFade(el, fadeDuration = 1800) {
     if(m<1) el._spawnFadeRaf=requestAnimationFrame(tick);
   };
   tick();
+}
+// Adaptive density governor maintains smooth performance across all devices.
+let lastFrameTime = performance.now();
+let smoothedFPS = 60;
+let densityRAF = 0;
+function updateFPS() {
+  const now = performance.now();
+  const delta = now - lastFrameTime;
+  lastFrameTime = now;
+  const fps = delta > 0 ? (1000 / delta) : 60;
+  smoothedFPS = smoothedFPS * 0.92 + fps * 0.08;
+}
+function densityMultiplier() {
+  if (smoothedFPS >= 55) return 1.0;
+  if (smoothedFPS >= 45) return 0.85;
+  if (smoothedFPS >= 35) return 0.7;
+  return 0.55;
+}
+function adjustedVisualMax(baseMax) {
+  return Math.max(1, Math.floor(baseMax * densityMultiplier()));
+}
+function startDensityGovernor() {
+  if (densityRAF) return;
+  const tick = () => {
+    updateFPS();
+    densityRAF = requestAnimationFrame(tick);
+  };
+  densityRAF = requestAnimationFrame(tick);
 }
 
 // ============ VISIBILITY / LIFECYCLE CLEANUP ============
@@ -715,8 +743,9 @@ function spawnBird() {
   setTimeout(()=>fadeOutAndRemove(b,900),dur*1e3+500);
 }
 function startBirds() {
-  for(let i=0;i<V.birds.initial;i++) visTimers.push(setTimeout(spawnBird,jitter(300+Math.random()*2500)));
-  const iv=setInterval(()=>{if(activeVisual!=='birds'){clearInterval(iv);return;}if(VIS.querySelectorAll('.bird').length<V.birds.max)spawnBird();},jitter(4000+Math.random()*4000));
+  const initialMax=Math.min(V.birds.initial,adjustedVisualMax(V.birds.max));
+  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnBird,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='birds'){clearInterval(iv);return;}if(VIS.querySelectorAll('.bird').length<adjustedVisualMax(V.birds.max))spawnBird();},jitter(4000+Math.random()*4000));
   visTimers.push(iv);
 }
 
@@ -856,7 +885,7 @@ function spawnStars() {
   const vw=window.innerWidth, vh=window.innerHeight;
   const isPhone=Math.min(vw,vh)<520;
   const target=isPhone ? (8+Math.floor(Math.random()*7)) : (10+Math.floor(Math.random()*7)); // 8-14 mobile, 10-16 larger
-  const total=Math.min(V.stars.max,target);
+  const total=Math.min(adjustedVisualMax(V.stars.max),target);
   const isDark=document.body.getAttribute('data-theme')==='dark';
 
   for(let i=0;i<total;i++){
@@ -1655,12 +1684,13 @@ function spawnBee() {
   b._stop=()=>{if(b._raf) cancelAnimationFrame(b._raf);};
 }
 function startBees() {
-  for(let i=0;i<V.bee.initial;i++){
+  const initialMax=Math.min(V.bee.initial,adjustedVisualMax(V.bee.max));
+  for(let i=0;i<initialMax;i++){
     visTimers.push(setTimeout(spawnBee,jitter(300+Math.random()*3500)));
   }
   const iv=setInterval(()=>{
     if(activeVisual!=='bee'){clearInterval(iv);return;}
-    if(VIS.querySelectorAll('.bee').length<V.bee.max) spawnBee();
+    if(VIS.querySelectorAll('.bee').length<adjustedVisualMax(V.bee.max)) spawnBee();
   },jitter(15000+Math.random()*15000));
   visTimers.push(iv);
 }
@@ -1734,18 +1764,19 @@ function spawnFirefly() {
   f._stop=()=>{if(f._raf) cancelAnimationFrame(f._raf);};
 }
 function startFireflies() {
-  for(let i=0;i<V.firefly.initial;i++){
+  const initialMax=Math.min(V.firefly.initial,adjustedVisualMax(V.firefly.max));
+  for(let i=0;i<initialMax;i++){
     visTimers.push(setTimeout(spawnFirefly,jitter(500+Math.random()*5000)));
   }
   const iv=setInterval(()=>{
     if(activeVisual!=='firefly'){clearInterval(iv);return;}
-    if(VIS.querySelectorAll('.firefly').length<V.firefly.max) spawnFirefly();
+    if(VIS.querySelectorAll('.firefly').length<adjustedVisualMax(V.firefly.max)) spawnFirefly();
   },jitter(15000+Math.random()*15000));
   visTimers.push(iv);
 }
 function spawnKoi() {
-  // Hard guard: never allow concurrent koi, prevents visual crossover entirely.
-  if (VIS.querySelectorAll('.koi').length > 0) return;
+  const koiCap=adjustedVisualMax(V.koi.max);
+  if (VIS.querySelectorAll('.koi').length >= koiCap) return;
   const k=document.createElement('div');
   k.className='koi';
   k.spawnTime=performance.now();
@@ -1938,10 +1969,11 @@ function spawnKoi() {
   k._stop=()=>{ if(k._raf) cancelAnimationFrame(k._raf); };
 }
 function startKoi() {
-  for(let i=0;i<V.koi.initial;i++) visTimers.push(setTimeout(spawnKoi,jitter(300+Math.random()*2500)));
+  const initialMax=Math.min(V.koi.initial,adjustedVisualMax(V.koi.max));
+  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnKoi,jitter(300+Math.random()*2500)));
   const iv=setInterval(()=>{
     if(activeVisual!=='koi'){clearInterval(iv);return;}
-    if(VIS.querySelectorAll('.koi').length<V.koi.max) spawnKoi();
+    if(VIS.querySelectorAll('.koi').length<adjustedVisualMax(V.koi.max)) spawnKoi();
   },jitter(5000+Math.random()*3000));
   visTimers.push(iv);
 }
@@ -2000,8 +2032,9 @@ function spawnBlossom() {
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
 function startBlossom() {
-  for(let i=0;i<V.blossom.initial;i++) visTimers.push(setTimeout(spawnBlossom,jitter(200+Math.random()*2500)));
-  const iv=setInterval(()=>{if(activeVisual!=='blossom'){clearInterval(iv);return;}if(VIS.querySelectorAll('.blossom').length<V.blossom.max)spawnBlossom();},jitter(4000+Math.random()*3000));
+  const initialMax=Math.min(V.blossom.initial,adjustedVisualMax(V.blossom.max));
+  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnBlossom,jitter(200+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='blossom'){clearInterval(iv);return;}if(VIS.querySelectorAll('.blossom').length<adjustedVisualMax(V.blossom.max))spawnBlossom();},jitter(4000+Math.random()*3000));
   visTimers.push(iv);
 }
 
@@ -2050,8 +2083,9 @@ function spawnFeather() {
   setTimeout(()=>fadeOutAndRemove(f,900),(dur+1)*1e3);
 }
 function startFeathers() {
-  for(let i=0;i<V.feather.initial;i++) visTimers.push(setTimeout(spawnFeather,jitter(300+Math.random()*3000)));
-  const iv=setInterval(()=>{if(activeVisual!=='feather'){clearInterval(iv);return;}if(VIS.querySelectorAll('.feather').length<V.feather.max)spawnFeather();},jitter(5500+Math.random()*4500));
+  const initialMax=Math.min(V.feather.initial,adjustedVisualMax(V.feather.max));
+  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnFeather,jitter(300+Math.random()*3000)));
+  const iv=setInterval(()=>{if(activeVisual!=='feather'){clearInterval(iv);return;}if(VIS.querySelectorAll('.feather').length<adjustedVisualMax(V.feather.max))spawnFeather();},jitter(5500+Math.random()*4500));
   visTimers.push(iv);
 }
 
@@ -2105,8 +2139,9 @@ function spawnBrush() {
   setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
 }
 function startBrush() {
-  for(let i=0;i<V.brush.initial;i++) visTimers.push(setTimeout(spawnBrush,jitter(300+Math.random()*2500)));
-  const iv=setInterval(()=>{if(activeVisual!=='brush'){clearInterval(iv);return;}if(VIS.querySelectorAll('.brush').length<V.brush.max)spawnBrush();},jitter(5000+Math.random()*3000));
+  const initialMax=Math.min(V.brush.initial,adjustedVisualMax(V.brush.max));
+  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnBrush,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='brush'){clearInterval(iv);return;}if(VIS.querySelectorAll('.brush').length<adjustedVisualMax(V.brush.max))spawnBrush();},jitter(5000+Math.random()*3000));
   visTimers.push(iv);
 }
 
@@ -2231,6 +2266,7 @@ function reveal(e){
 }
 
 window.addEventListener('load',()=>{
+  startDensityGovernor();
   initTheme();
   const buildEl=document.createElement("div");
   buildEl.className="build-indicator";
