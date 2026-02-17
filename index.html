@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#080808">
+<meta name="theme-color" content="#3C3487">
 <title>Fortune</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg-primary:#080808;
-    --text-primary:#9A1F22;
-    --text-secondary:rgba(154,31,34,.72);
-    --text-tertiary:rgba(154,31,34,.45);
-    --viz-strong:rgba(154,31,34,.85);
-    --viz-medium:rgba(154,31,34,.55);
-    --viz-subtle:rgba(154,31,34,.28);
-    --viz-faint:rgba(154,31,34,.14);
+    --bg-primary:#3C3487;
+    --text-primary:#FFE186;
+    --text-secondary:rgba(255,225,134,.72);
+    --text-tertiary:rgba(255,225,134,.45);
+    --viz-strong:rgba(232,223,197,.85);
+    --viz-medium:rgba(232,223,197,.55);
+    --viz-subtle:rgba(255,225,134,.28);
+    --viz-faint:rgba(255,225,134,.14);
     --sage:var(--text-secondary);
     --sage-dark:var(--text-primary);
     --sage-light:var(--text-secondary);
@@ -359,10 +359,10 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.25";
+const BUILD = "dev-0.2.26";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
-const PALETTE_CACHE_KEY = 'paletteCache_v6';
+const PALETTE_CACHE_KEY = 'paletteCache_v7';
 const PALETTE_WINDOW_HOURS = 6;
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -401,8 +401,8 @@ function createPalette(bg,text){
 
 const PALETTES = [
   {
-    dark: createPalette('#080808','#9A1F22'),
-    light: createPalette('#F6F1EA','#9A1F22')
+    dark: createPalette('#3C3487','#FFE186'),
+    light: createPalette('#FFF8E7','#3C3487')
   }
 ];
 
@@ -465,7 +465,7 @@ function resolvePaletteSession(){
 function currentPalette(theme='dark'){
   if(!paletteSession) paletteSession = resolvePaletteSession();
   const family = PALETTES[paletteSession.paletteIndex] || PALETTES[0];
-  if(!family || typeof family !== 'object') return createPalette('#080808','#9A1F22');
+  if(!family || typeof family !== 'object') return createPalette('#3C3487','#FFE186');
   return theme === 'dark' ? (family.dark || family.light) : (family.light || family.dark);
 }
 
