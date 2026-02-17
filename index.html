@@ -341,7 +341,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.18";
+const BUILD = "dev-0.1.20";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -640,25 +640,49 @@ function inSafe(x, y, s) {
 }
 
 function getSandReadZone(w,h,pad=34){
-  const ids=['fortune','nums','btn'];
+  const rects=getProtectedUiRects(w,h,pad);
+  if(!rects.length) return null;
   let left=Infinity, top=Infinity, right=-Infinity, bottom=-Infinity;
-  for(const id of ids){
-    const el=document.getElementById(id);
+  for(const r of rects){
+    left=Math.min(left,r.x);
+    top=Math.min(top,r.y);
+    right=Math.max(right,r.x+r.w);
+    bottom=Math.max(bottom,r.y+r.h);
+  }
+  if(!isFinite(left) || !isFinite(top) || !isFinite(right) || !isFinite(bottom)) return null;
+  return {x:left,y:top,w:right-left,h:bottom-top};
+}
+
+function getProtectedUiRects(w,h,pad=22){
+  const selectors=['#fortune','#nums','#btn','.lang','#themeToggle'];
+  const out=[];
+  for(const sel of selectors){
+    const el=document.querySelector(sel);
     if(!el) continue;
     const r=el.getBoundingClientRect();
     if(!(r.width>0 && r.height>0)) continue;
-    left=Math.min(left,r.left);
-    top=Math.min(top,r.top);
-    right=Math.max(right,r.right);
-    bottom=Math.max(bottom,r.bottom);
+    const x=Math.max(0,r.left-pad);
+    const y=Math.max(0,r.top-pad);
+    const x2=Math.min(w,r.right+pad);
+    const y2=Math.min(h,r.bottom+pad);
+    if(x2<=x || y2<=y) continue;
+    out.push({x,y,w:x2-x,h:y2-y});
   }
-  if(!isFinite(left) || !isFinite(top) || !isFinite(right) || !isFinite(bottom)) return null;
-  const x=Math.max(0,left-pad);
-  const y=Math.max(0,top-pad);
-  const x2=Math.min(w,right+pad);
-  const y2=Math.min(h,bottom+pad);
-  if(x2<=x || y2<=y) return null;
-  return {x,y,w:x2-x,h:y2-y};
+  return out;
+}
+
+function getSandProtectedRects(w,h,pad=24){
+  return getProtectedUiRects(w,h,pad);
+}
+
+function roundedRectPath(ctx,x,y,w,h,r){
+  const rr=Math.max(0,Math.min(r,Math.min(w,h)*0.5));
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
 }
 
 function fadeOutAndRemove(el, ms=900) {
@@ -1273,13 +1297,15 @@ function buildSandGardenPaths(w,h,stones,baseAngleDeg,spacing){
 function drawSandPathsProgressive(ctx, paths, opts){
   if(!paths.length) return;
   const beginReadZoneClip=()=>{
-    if(!opts.safeRect) return false;
-    const sr=opts.safeRect;
-    if(!(sr.w>0 && sr.h>0)) return false;
+    const rects=(opts.protectedRects && opts.protectedRects.length) ? opts.protectedRects : (opts.safeRect ? [opts.safeRect] : []);
+    if(!rects.length) return false;
     ctx.save();
     ctx.beginPath();
     ctx.rect(0,0,opts.canvasW,opts.canvasH);
-    ctx.rect(sr.x,sr.y,sr.w,sr.h);
+    for(const r of rects){
+      if(!(r.w>0 && r.h>0)) continue;
+      roundedRectPath(ctx,r.x,r.y,r.w,r.h,22);
+    }
     ctx.clip('evenodd');
     return true;
   };
@@ -1378,7 +1404,7 @@ function startSandGarden() {
     sandInit=initSandCanvas(sand);
     const {ctx,w,h}=sandInit;
     const isDark=document.body.getAttribute('data-theme')==='dark';
-    const safeRect=getSandReadZone(w,h,36);
+    const protectedRects=getSandProtectedRects(w,h,28);
     ctx.clearRect(0,0,w,h); // start blank
     const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
     const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
@@ -1386,7 +1412,7 @@ function startSandGarden() {
       alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
       width:0.8+Math.random()*0.4,
       reduceMotion:prefersReduced,
-      safeRect,
+      protectedRects,
       canvasW:w,
       canvasH:h
     });
@@ -1396,10 +1422,12 @@ function startSandGarden() {
   const onOrientation=()=>{ drawCurrent(); };
   const onFortuneRendered=()=>{ drawCurrent(); };
   const onThemeChanged=()=>{ drawCurrent(); };
+  const onLanguageChanged=()=>{ drawCurrent(); };
   window.addEventListener('resize',onResize,{passive:true});
   window.addEventListener('orientationchange',onOrientation,{passive:true});
   window.addEventListener('fortune-rendered',onFortuneRendered);
   window.addEventListener('theme-changed',onThemeChanged);
+  window.addEventListener('language-changed',onLanguageChanged);
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(()=>{ if(activeVisual==='sand') drawCurrent(); }).catch(()=>{});
   }
@@ -1408,6 +1436,7 @@ function startSandGarden() {
     window.removeEventListener('orientationchange',onOrientation);
     window.removeEventListener('fortune-rendered',onFortuneRendered);
     window.removeEventListener('theme-changed',onThemeChanged);
+    window.removeEventListener('language-changed',onLanguageChanged);
   };
 }
 
@@ -2443,6 +2472,7 @@ function setLang(l,revealNow=true){
   const f=document.getElementById('fortune');
   f.classList.toggle('cjk',l==='zh');
   last=-1;
+  window.dispatchEvent(new Event('language-changed'));
   if(revealNow) reveal();
 }
 
