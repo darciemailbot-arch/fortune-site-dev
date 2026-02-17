@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#1D2545">
+<meta name="theme-color" content="#3C3487">
 <title>Fortune</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg-primary:#1D2545;
-    --text-primary:#E8DFC5;
-    --text-secondary:rgba(232,223,197,.72);
-    --text-tertiary:rgba(232,223,197,.45);
+    --bg-primary:#3C3487;
+    --text-primary:#FFE186;
+    --text-secondary:rgba(255,225,134,.72);
+    --text-tertiary:rgba(255,225,134,.45);
     --viz-strong:rgba(232,223,197,.85);
     --viz-medium:rgba(232,223,197,.55);
-    --viz-subtle:rgba(232,223,197,.28);
-    --viz-faint:rgba(232,223,197,.14);
+    --viz-subtle:rgba(255,225,134,.28);
+    --viz-faint:rgba(255,225,134,.14);
     --sage:var(--text-secondary);
     --sage-dark:var(--text-primary);
     --sage-light:var(--text-secondary);
@@ -127,8 +127,8 @@
   .bird .wl{animation:wing-l var(--fs) ease-in-out infinite}
   .bird .wr{animation:wing-r var(--fs) ease-in-out infinite}
   @keyframes bf{0%{opacity:0;transform:translateX(0) translateY(0)}3%{opacity:calc(var(--spawnFade,1) * var(--bop1,.12))}50%{opacity:calc(var(--spawnFade,1) * var(--bop2,.08));transform:translateX(calc(var(--tr)*.5)) translateY(var(--dr))}97%{opacity:calc(var(--spawnFade,1) * var(--bop3,.04))}100%{opacity:0;transform:translateX(var(--tr)) translateY(calc(var(--dr)*1.5))}}
-  @keyframes wing-l{0%,100%{transform:rotate(-28deg) scaleX(1.05) scaleY(1.12)}50%{transform:rotate(8deg) scaleX(.98) scaleY(.90)}}
-  @keyframes wing-r{0%,100%{transform:rotate(28deg) scaleX(1.05) scaleY(1.12)}50%{transform:rotate(-8deg) scaleX(.98) scaleY(.90)}}
+  @keyframes wing-l{0%,100%{transform:rotate(-31deg) scaleX(1.08) scaleY(1.22)}50%{transform:rotate(12deg) scaleX(.92) scaleY(.72)}}
+  @keyframes wing-r{0%,100%{transform:rotate(31deg) scaleX(1.08) scaleY(1.22)}50%{transform:rotate(-12deg) scaleX(.92) scaleY(.72)}}
   body:not([data-theme='dark']) .bird{mix-blend-mode:multiply;--bop1:.18;--bop2:.12;--bop3:.06}
   body:not([data-theme='dark']) .bird .wing{stroke-width:calc(1.85 * (var(--vizIntensity) / var(--vizLight)))}
 
@@ -352,10 +352,10 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.32";
+const BUILD = "dev-0.2.00";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
-const PALETTE_CACHE_KEY = 'paletteCache';
+const PALETTE_CACHE_KEY = 'paletteCache_v2';
 const PALETTE_WINDOW_HOURS = 6;
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -393,13 +393,29 @@ function createPalette(bg,text){
 }
 
 const PALETTES = [
-  {
-    dark: createPalette('#1D2545','#E8DFC5'), // A dark: Navy/Cream
-    light: createPalette('#F5F1E6','#1D2545') // A light: Cream/Navy
+  { // Midnight — deepest indigo + warm gold
+    dark: createPalette('#3C3487','#FFE186'),
+    light: createPalette('#FFF8E7','#3C3487')
   },
-  {
-    dark: createPalette('#013220','#FDFBD4'), // B dark: Forest/Cream
-    light: createPalette('#FDFBD4','#013220') // B light: Cream/Forest
+  { // Dusk — purple-indigo + soft cream-gold
+    dark: createPalette('#484399','#F5E6C8'),
+    light: createPalette('#F5F0E3','#484399')
+  },
+  { // Twilight — deep navy-indigo + warm amber
+    dark: createPalette('#3A3578','#E8AC2D'),
+    light: createPalette('#FFF6DC','#3A3578')
+  },
+  { // Evening — muted indigo + pale gold
+    dark: createPalette('#423D7A','#FFE186'),
+    light: createPalette('#FFFAE8','#423D7A')
+  },
+  { // Violet Hour — rich purple + warm cream
+    dark: createPalette('#3C3487','#F2E4C6'),
+    light: createPalette('#F3EDE0','#3C3487')
+  },
+  { // Afterglow — dark periwinkle + amber-gold
+    dark: createPalette('#484399','#E8AC2D'),
+    light: createPalette('#FFF4D6','#484399')
   }
 ];
 
@@ -462,7 +478,7 @@ function resolvePaletteSession(){
 function currentPalette(theme='dark'){
   if(!paletteSession) paletteSession = resolvePaletteSession();
   const family = PALETTES[paletteSession.paletteIndex] || PALETTES[0];
-  if(!family || typeof family !== 'object') return createPalette('#1D2545','#E8DFC5');
+  if(!family || typeof family !== 'object') return createPalette('#3C3487','#FFE186');
   return theme === 'dark' ? (family.dark || family.light) : (family.light || family.dark);
 }
 
@@ -986,8 +1002,9 @@ function renderBeeTrail(now){
 window.addEventListener('resize',resizeBeeTrailCanvas,{passive:true});
 
 function clearVisuals() {
-  visTimers.forEach(t=>clearTimeout(t));
+  visTimers.forEach(t=>{ clearTimeout(t); clearInterval(t); });
   visTimers=[];
+  postSeedVisualTimer=null;
   Array.from(VIS.children).forEach(el=>fadeOutAndRemove(el,900));
 }
 
@@ -1045,7 +1062,7 @@ function spawnBird() {
   b.style.setProperty('--fs',fs+'s');
   b.style.animationDuration=dur+'s';
   b._onRemove=()=>activeBirdLanes.delete(y);
-  b.innerHTML=`<svg viewBox="0 0 20 12"><path class="wing wl" d="M10 6 Q5.8 1.8 1.2 3.2"/><path class="wing wr" d="M10 6 Q14.2 1.8 18.8 3.2"/></svg>`;
+  b.innerHTML=`<svg viewBox="0 0 20 12"><path class="wing wl" d="M10 6 Q5.4 0.9 1.2 3.6"/><path class="wing wr" d="M10 6 Q14.6 0.9 18.8 3.6"/></svg>`;
   VIS.appendChild(b);
   applySpawnFade(b);
   setTimeout(()=>fadeOutAndRemove(b,900),dur*1e3+500);
@@ -1308,7 +1325,9 @@ function startStars() {
     shot._onRemove=finish;
     const tick=(now)=>{
       if(!shot.isConnected) return;
-      const p=Math.max(0,Math.min(1,(now-startTime)/dur));
+      const pRaw=Math.max(0,Math.min(1,(now-startTime)/dur));
+      const p=Math.max(shot._p || 0, pRaw);
+      shot._p=p;
       const x=lerp(x0,x1,p);
       const y=lerp(y0,y1,p);
       shot.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${ang.toFixed(1)}deg)`;
@@ -1531,22 +1550,29 @@ function drawSandPathsProgressive(ctx, paths, opts){
     }
     return f;
   };
-  const segMask=(a,b)=>{
-    const mx=(a[0]+b[0])*0.5;
-    const my=(a[1]+b[1])*0.5;
-    const m1=pointMask(a[0],a[1]);
-    const m2=pointMask(mx,my);
-    const m3=pointMask(b[0],b[1]);
-    return Math.min(m1,m2,m3);
+  const maskNoise=(x,y)=>{
+    const n=Math.sin(x*0.0037 + y*0.0021)*0.5 + Math.sin(x*0.0014 - y*0.0033)*0.5;
+    return 0.9 + ((n*0.5 + 0.5) * 0.1);
   };
-  // Flatten all segments into a single drawing queue
-  const queue=[];
-  for(const p of paths){
+  const segMask=(a,b)=>{
+    let m=1;
+    for(const t of [0,0.25,0.5,0.75,1]){
+      const x=a[0]+(b[0]-a[0])*t;
+      const y=a[1]+(b[1]-a[1])*t;
+      m=Math.min(m,pointMask(x,y));
+      if(m<=0) return 0;
+    }
+    const mx=(a[0]+b[0])*0.5, my=(a[1]+b[1])*0.5;
+    return m*maskNoise(mx,my);
+  };
+  // Interleave segments across paths so each pass reveals multiple parallel rake lines.
+  const segmentsByPath=paths.map(p=>{
+    const arr=[];
     for(let i=0;i<p.length-1;i++){
       const a=p[i], b=p[i+1];
       const mask=segMask(a,b);
       if(mask<=0.0001) continue;
-      queue.push({
+      arr.push({
         a,b,
         spawnTime:performance.now(),
         fadeLast:0,
@@ -1554,6 +1580,15 @@ function drawSandPathsProgressive(ctx, paths, opts){
         w:Math.max(0.8,Math.min(1.2,opts.width+(Math.random()-.5)*0.08)),
         mask
       });
+    }
+    return arr;
+  });
+  const maxSegs=segmentsByPath.reduce((m,p)=>Math.max(m,p.length),0);
+  const queue=[];
+  for(let si=0;si<maxSegs;si++){
+    for(let pi=0;pi<segmentsByPath.length;pi++){
+      const seg=segmentsByPath[pi][si];
+      if(seg) queue.push(seg);
     }
   }
   const total=queue.length;
@@ -2432,12 +2467,12 @@ function spawnFeather() {
   const y0=-sz-(8+Math.random()*24);
   let dur=14+Math.random()*8; // 14-22s
   const driftPhase=Math.random()*Math.PI*2;
-  const driftAmp=18+Math.random()*22;
+  const driftAmp=22+Math.random()*24;
   const driftFreq=0.0006+Math.random()*0.0006;
   const rotMax=6+Math.random()*10;
   let driftNoise=0;
-  let driftNoiseTarget=(-4+Math.random()*8);
-  let driftNoiseNext=performance.now()+1000+Math.random()*1000;
+  let driftNoiseTarget=(-6+Math.random()*12);
+  let driftNoiseNext=performance.now()+900+Math.random()*900;
   const featherFrames=Math.max(1,(dur*1000)/16.667);
   const featherVX=(driftAmp*1.15)/featherFrames;
   const featherVY=(vh*1.24)/featherFrames;
@@ -2470,13 +2505,13 @@ function spawnFeather() {
     const elapsed=now-t0;
     const p=Math.min(1,elapsed/(dur*1000));
     if(now>=driftNoiseNext){
-      driftNoiseTarget=(-7+Math.random()*14);
-      driftNoiseNext=now+1000+Math.random()*1000;
+      driftNoiseTarget=(-8+Math.random()*16);
+      driftNoiseNext=now+900+Math.random()*1100;
     }
-    driftNoise=smoothStep(driftNoise,driftNoiseTarget,0.025);
+    driftNoise=smoothStep(driftNoise,driftNoiseTarget,0.03);
 
     const waveA=Math.sin(elapsed*driftFreq+driftPhase)*driftAmp;
-    const waveB=Math.sin(elapsed*driftFreq*0.53+driftPhase*0.7)*(driftAmp*0.16);
+    const waveB=Math.sin(elapsed*driftFreq*0.52+driftPhase*0.7)*(driftAmp*0.22);
     const drift=waveA+waveB+driftNoise;
     const targetX=clampVal(x0+drift,8,vw-sz-8);
     const targetY=y0+(travel*p);
@@ -2485,17 +2520,19 @@ function spawnFeather() {
     const prevY=(f._sy ?? targetY);
     const prevVX=(f._vx ?? 0);
     const prevVY=(f._vy ?? 0);
-    let velocityX=smoothStep(prevVX,targetX-prevX,0.04);
-    let velocityY=smoothStep(prevVY,targetY-prevY,0.04);
-    [velocityX,velocityY]=clampMagnitude(velocityX,velocityY,TRANQUIL_SPEED);
-    const x=smoothStep(prevX,prevX+velocityX,0.08);
-    const y=smoothStep(prevY,prevY+velocityY,0.08);
+    let velocityX=smoothStep(prevVX,targetX-prevX,0.05);
+    let velocityY=smoothStep(prevVY,targetY-prevY,0.045);
+    [velocityX]=clampMagnitude(velocityX,0,TRANQUIL_SPEED*0.72);
+    [velocityY]=clampMagnitude(velocityY,0,TRANQUIL_SPEED*0.98);
+    const x=smoothStep(prevX,prevX+velocityX,0.10);
+    const y=smoothStep(prevY,prevY+velocityY,0.09);
     f._sx=x;f._sy=y;f._vx=velocityX;f._vy=velocityY;
     f.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0)`;
 
     if(featherSVG){
       const prevRot=(f._rot ?? 0);
-      const rotTarget=clampVal(velocityX*26,-rotMax,rotMax);
+      const driftRatio=driftAmp>0 ? (drift/driftAmp) : 0;
+      const rotTarget=clampVal((driftRatio*rotMax*0.88)+(velocityX*11),-rotMax,rotMax);
       const rot=smoothStep(prevRot,rotTarget,0.12);
       f._rot=rot;
       featherSVG.style.transform=`rotate(${rot.toFixed(2)}deg)`;
@@ -2540,7 +2577,7 @@ function spawnBrush() {
     const t=lineCount===1?0.5:(i/(lineCount-1));
     const yNorm=0.14+t*0.72+(-0.02+Math.random()*0.04);
     const wavelength=180+Math.random()*160;
-    const cyclesPer10=0.9+Math.random()*0.7;
+    const cyclesPer10=1.15+Math.random()*0.75;
     return {
       yNorm,
       amp:8+Math.random()*10,
@@ -2592,7 +2629,7 @@ function spawnBrush() {
       const targetStep=wave.speedPxPerSec*dt*dir;
       wave.stepPx=smoothStep(wave.stepPx,targetStep,0.08);
       let stepPx=wave.stepPx;
-      [stepPx]=clampMagnitude(stepPx,0,TRANQUIL_SPEED*3);
+      [stepPx]=clampMagnitude(stepPx,0,TRANQUIL_SPEED*4.2);
       wave.phase += (stepPx/wave.wavelength)*Math.PI*2;
 
       const yBase=h*wave.yNorm;
@@ -2825,8 +2862,23 @@ function initApp(){
 }
 document.addEventListener('DOMContentLoaded',initApp,{once:true});
 window.addEventListener('load',initApp,{once:true});
+if('requestIdleCallback' in window){
+  window.requestIdleCallback(()=>initApp(),{timeout:1200});
+} else {
+  setTimeout(()=>initApp(),900);
+}
 
 window.addEventListener('resize',()=>positionCookie(true));
+window.addEventListener('orientationchange',()=>{
+  setTimeout(()=>{
+    setupCanvasAll();
+    positionCookie(true);
+    restartVisualRuntime(60,false);
+  },80);
+},{passive:true});
+window.addEventListener('focus',()=>{
+  if(!document.hidden) restartVisualRuntime(40,false);
+},{passive:true});
 </script>
 </body>
 </html>
