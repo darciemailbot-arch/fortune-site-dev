@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.10";
+const BUILD = "dev-0.2.11";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -736,6 +736,10 @@ function densityMultiplier() {
 }
 function adjustedVisualMax(baseMax) {
   return Math.max(1, Math.floor(baseMax * densityMultiplier()));
+}
+const KOI_MIN_ON_SCREEN = 2;
+function koiTargetCap() {
+  return Math.max(KOI_MIN_ON_SCREEN, adjustedVisualMax(Math.max(V.koi.max, KOI_MIN_ON_SCREEN)));
 }
 function startDensityGovernor() {
   if (densityRAF) return;
@@ -2219,7 +2223,7 @@ function startFireflies() {
   visTimers.push(iv);
 }
 function spawnKoi() {
-  const koiCap=adjustedVisualMax(V.koi.max);
+  const koiCap=koiTargetCap();
   if (VIS.querySelectorAll('.koi').length >= koiCap) return;
   const k=document.createElement('div');
   k.className='koi';
@@ -2411,13 +2415,38 @@ function spawnKoi() {
 
   k._raf=requestAnimationFrame(step);
   k._stop=()=>{ if(k._raf) cancelAnimationFrame(k._raf); };
+  k._onRemove=()=>{
+    if(activeVisual!=='koi') return;
+    setTimeout(()=>{
+      if(activeVisual!=='koi') return;
+      const need=Math.max(0,Math.min(KOI_MIN_ON_SCREEN,koiTargetCap())-VIS.querySelectorAll('.koi').length);
+      for(let i=0;i<need;i++) spawnKoi();
+    },60);
+  };
 }
 function startKoi() {
-  const initialMax=Math.min(V.koi.initial,adjustedVisualMax(V.koi.max));
-  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnKoi,jitter(300+Math.random()*2500)));
+  const cap=koiTargetCap();
+  const minNow=Math.min(KOI_MIN_ON_SCREEN,cap);
+  let count=VIS.querySelectorAll('.koi').length;
+  for(let i=0;i<minNow-count;i++) spawnKoi();
+
+  const initialMax=Math.max(minNow,Math.min(cap,V.koi.initial));
+  for(let i=0;i<Math.max(0,initialMax-minNow);i++){
+    visTimers.push(setTimeout(spawnKoi,120+Math.random()*520));
+  }
+
+  const guard=setInterval(()=>{
+    if(activeVisual!=='koi'){clearInterval(guard);return;}
+    const capNow=koiTargetCap();
+    const minKeep=Math.min(KOI_MIN_ON_SCREEN,capNow);
+    let current=VIS.querySelectorAll('.koi').length;
+    for(let i=current;i<minKeep;i++) spawnKoi();
+  },900);
+  visTimers.push(guard);
+
   const iv=setInterval(()=>{
     if(activeVisual!=='koi'){clearInterval(iv);return;}
-    if(VIS.querySelectorAll('.koi').length<adjustedVisualMax(V.koi.max)) spawnKoi();
+    if(VIS.querySelectorAll('.koi').length<koiTargetCap()) spawnKoi();
   },jitter(5000+Math.random()*3000));
   visTimers.push(iv);
 }
