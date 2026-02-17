@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.11";
+const BUILD = "dev-0.2.12";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -2626,11 +2626,11 @@ function spawnBrush() {
   const lineCount=3+Math.floor(Math.random()*5); // 3-7 lines
   const dir=Math.random()>.5 ? 1 : -1;
   let raf=0, lastNow=performance.now();
-  let safeRect=getSandReadZone(w,h,38);
+  let safeRects=getProtectedUiRects(w,h,24);
 
   const waves=Array.from({length:lineCount}).map((_,i)=>{
     const t=lineCount===1?0.5:(i/(lineCount-1));
-    const yNorm=0.14+t*0.72+(-0.02+Math.random()*0.04);
+    const yNorm=0.60+t*0.34+(-0.02+Math.random()*0.04);
     const wavelength=180+Math.random()*160;
     const cyclesPer10=1.15+Math.random()*0.75;
     return {
@@ -2655,15 +2655,18 @@ function spawnBrush() {
     rect=canvas.getBoundingClientRect();
     w=Math.max(1,rect.width);
     h=Math.max(1,rect.height);
-    safeRect=getSandReadZone(w,h,38);
+    safeRects=getProtectedUiRects(w,h,24);
   };
 
   const beginReadZoneClip=()=>{
-    if(!safeRect || !(safeRect.w>0 && safeRect.h>0)) return false;
+    if(!safeRects || !safeRects.length) return false;
     ctx.save();
     ctx.beginPath();
     ctx.rect(0,0,w,h);
-    ctx.rect(safeRect.x,safeRect.y,safeRect.w,safeRect.h);
+    for(const r of safeRects){
+      if(r.w<=0 || r.h<=0) continue;
+      ctx.rect(r.x,r.y,r.w,r.h);
+    }
     ctx.clip('evenodd');
     return true;
   };
@@ -2737,8 +2740,8 @@ function spawnBrush() {
 
   const onResize=()=>refreshLayout();
   const onOrientation=()=>refreshLayout();
-  const onFortune=()=>{ safeRect=getSandReadZone(w,h,38); };
-  const onTheme=()=>{ safeRect=getSandReadZone(w,h,38); };
+  const onFortune=()=>{ safeRects=getProtectedUiRects(w,h,24); };
+  const onTheme=()=>{ safeRects=getProtectedUiRects(w,h,24); };
   window.addEventListener('resize',onResize,{passive:true});
   window.addEventListener('orientationchange',onOrientation,{passive:true});
   window.addEventListener('fortune-rendered',onFortune);
