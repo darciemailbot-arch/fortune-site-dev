@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#3C3487">
+<meta name="theme-color" content="#2A1C1D">
 <title>Fortune</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg-primary:#3C3487;
-    --text-primary:#FFE186;
-    --text-secondary:rgba(255,225,134,.72);
-    --text-tertiary:rgba(255,225,134,.45);
-    --viz-strong:rgba(232,223,197,.85);
-    --viz-medium:rgba(232,223,197,.55);
-    --viz-subtle:rgba(255,225,134,.28);
-    --viz-faint:rgba(255,225,134,.14);
+    --bg-primary:#2A1C1D;
+    --text-primary:#EADBCF;
+    --text-secondary:rgba(234,219,207,.72);
+    --text-tertiary:rgba(234,219,207,.45);
+    --viz-strong:rgba(234,219,207,.85);
+    --viz-medium:rgba(234,219,207,.55);
+    --viz-subtle:rgba(234,219,207,.28);
+    --viz-faint:rgba(234,219,207,.14);
     --sage:var(--text-secondary);
     --sage-dark:var(--text-primary);
     --sage-light:var(--text-secondary);
@@ -359,11 +359,11 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.18";
+const BUILD = "dev-0.2.19";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
-const PALETTE_CACHE_KEY = 'paletteCache_v5';
-const PALETTE_WINDOW_HOURS = 1/60; // 1 minute test window
+const PALETTE_CACHE_KEY = 'paletteCache_v6';
+const PALETTE_WINDOW_HOURS = 6;
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
 let vizOpacityFloor = 0.14;
@@ -400,45 +400,9 @@ function createPalette(bg,text){
 }
 
 const PALETTES = [
-  // ── INDIGO & GOLD ──
-  { // Midnight — deepest indigo + warm gold
-    dark: createPalette('#3C3487','#FFE186'),
-    light: createPalette('#FFF8E7','#3C3487')
-  },
-  { // Dusk — purple-indigo + soft cream
-    dark: createPalette('#484399','#F5E6C8'),
-    light: createPalette('#F5F0E3','#484399')
-  },
-  { // Twilight — deep indigo + amber
-    dark: createPalette('#3A3578','#E8AC2D'),
-    light: createPalette('#FFF6DC','#3A3578')
-  },
-  // ── TEAL & SAGE ──
-  { // Stillwater — deep teal + pale frost
-    dark: createPalette('#22343a','#e0eef2'),
-    light: createPalette('#edf4f7','#22343a')
-  },
-  { // Tideline — ocean teal + warm mist
-    dark: createPalette('#375b63','#edf4f7'),
-    light: createPalette('#f0f6f8','#375b63')
-  },
-  // ── BAMBOO & GROVE ──
-  { // Bamboo — deep forest + pale leaf
-    dark: createPalette('#3e5d38','#e8f0e2'),
-    light: createPalette('#f3f7f1','#3e5d38')
-  },
-  { // Moss Garden — muted grove + soft fern
-    dark: createPalette('#4a6b42','#f3f7f1'),
-    light: createPalette('#f5f8f2','#3e5d38')
-  },
-  // ── STONE & RAIN ──
-  { // Rainstone — dark slate + cool mist
-    dark: createPalette('#3a4347','#e4eaed'),
-    light: createPalette('#f1f4f5','#3a4347')
-  },
-  { // Wet Granite — charcoal + pale silver
-    dark: createPalette('#4a565c','#f1f4f5'),
-    light: createPalette('#f3f5f6','#3a4347')
+  {
+    dark: createPalette('#2A1C1D','#EADBCF'),
+    light: createPalette('#F6F1EA','#9A1F22')
   }
 ];
 
