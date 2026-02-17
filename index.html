@@ -320,7 +320,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.7";
+const BUILD = "dev-0.1.8";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -539,12 +539,25 @@ function fadeOutAndRemove(el, ms=900) {
   }, ms);
 }
 
+// DPR-correct canvas rendering ensures consistent visibility and sharpness across retina displays.
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+}
+
 // ======== BEE TRAIL CANVAS (SHARED) ========
 let beeTrailLayer=null;
 let beeTrailCanvas=null;
 let beeTrailCtx=null;
 let beeTrailRAF=0;
 let beeTrailSeq=0;
+let beeTrailW=0;
+let beeTrailH=0;
 const beeTrailPoints=[];
 const BEE_TRAIL_MAX_PER_BEE=24;
 const BEE_TRAIL_MAX_TOTAL=120;
@@ -556,21 +569,16 @@ function ensureBeeTrailCanvas() {
   beeTrailCanvas=document.createElement('canvas');
   beeTrailLayer.appendChild(beeTrailCanvas);
   VIS.appendChild(beeTrailLayer);
-  beeTrailCtx=beeTrailCanvas.getContext('2d',{alpha:true,desynchronized:true});
   resizeBeeTrailCanvas();
   if(!beeTrailRAF) beeTrailRAF=requestAnimationFrame(renderBeeTrail);
 }
 
 function resizeBeeTrailCanvas() {
-  if(!beeTrailCanvas || !beeTrailCtx) return;
-  const w=window.innerWidth;
-  const h=window.innerHeight;
-  const dpr=Math.min(window.devicePixelRatio||1,2);
-  beeTrailCanvas.width=Math.floor(w*dpr);
-  beeTrailCanvas.height=Math.floor(h*dpr);
-  beeTrailCanvas.style.width=w+'px';
-  beeTrailCanvas.style.height=h+'px';
-  beeTrailCtx.setTransform(dpr,0,0,dpr,0,0);
+  if(!beeTrailCanvas) return;
+  beeTrailCtx=setupCanvas(beeTrailCanvas);
+  const rect=beeTrailCanvas.getBoundingClientRect();
+  beeTrailW=Math.max(1,rect.width);
+  beeTrailH=Math.max(1,rect.height);
 }
 
 function addBeeTrailPoint(id,x,y,now){
@@ -589,9 +597,7 @@ function renderBeeTrail(now){
     beeTrailRAF=0;
     return;
   }
-  const w=window.innerWidth;
-  const h=window.innerHeight;
-  beeTrailCtx.clearRect(0,0,w,h);
+  beeTrailCtx.clearRect(0,0,beeTrailW,beeTrailH);
   const c=getComputedStyle(document.body).getPropertyValue('--red').trim() || '#222';
   beeTrailCtx.fillStyle=c;
   for(let i=beeTrailPoints.length-1;i>=0;i--){
@@ -941,17 +947,14 @@ function sandColor(alpha){
 
 function initSandCanvas(container){
   const canvas=document.createElement('canvas');
-  const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-  const w=Math.max(1,Math.floor(window.innerWidth));
-  const h=Math.max(1,Math.floor(window.innerHeight));
-  canvas.width=Math.floor(w*dpr);
-  canvas.height=Math.floor(h*dpr);
-  canvas.style.width=w+'px';
-  canvas.style.height=h+'px';
-  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,w,h);
+  canvas.style.width='100%';
+  canvas.style.height='100%';
   container.appendChild(canvas);
+  const ctx=setupCanvas(canvas);
+  const rect=canvas.getBoundingClientRect();
+  const w=Math.max(1,rect.width);
+  const h=Math.max(1,rect.height);
+  ctx.clearRect(0,0,w,h);
   return {canvas,ctx,w,h};
 }
 
@@ -1148,25 +1151,32 @@ function startSandGarden() {
   const sand=document.createElement('div');
   sand.className='sand';
   VIS.appendChild(sand);
-
-  const {ctx,w,h}=initSandCanvas(sand);
-  ctx.clearRect(0,0,w,h); // start blank
-
+  let sandInit=initSandCanvas(sand);
+  const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isDark=document.body.getAttribute('data-theme')==='dark';
   const angles=[-12,-8,-4,0,4,8,12];
   let idx;
   do { idx=Math.floor(Math.random()*angles.length); } while (angles.length>1 && idx===lastSandAngleIdx);
   lastSandAngleIdx=idx;
-
-  const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isDark=document.body.getAttribute('data-theme')==='dark';
   const spacing=10+Math.random()*8;
-  const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
-  const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
-  drawSandPathsProgressive(ctx,paths,{
-    alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
-    width:0.8+Math.random()*0.4,
-    reduceMotion:prefersReduced
-  });
+  const drawCurrent=()=>{
+    if(activeVisual!=='sand' || !sand.isConnected) return;
+    sand.textContent='';
+    sandInit=initSandCanvas(sand);
+    const {ctx,w,h}=sandInit;
+    ctx.clearRect(0,0,w,h); // start blank
+    const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
+    const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
+    drawSandPathsProgressive(ctx,paths,{
+      alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
+      width:0.8+Math.random()*0.4,
+      reduceMotion:prefersReduced
+    });
+  };
+  drawCurrent();
+  const onResize=()=>{ drawCurrent(); };
+  window.addEventListener('resize',onResize,{passive:true});
+  sand._stop=()=>window.removeEventListener('resize',onResize);
 }
 
 function startRippleSystem() {
@@ -1176,23 +1186,19 @@ function startRippleSystem() {
   layer.appendChild(canvas);
   VIS.appendChild(layer);
 
-  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  let ctx=setupCanvas(canvas);
   const rings=[];
   let stone=null;
   let raf=0;
   let skipTimer=0;
-  const dpr=Math.min(window.devicePixelRatio||1,2);
-  let cw=window.innerWidth;
-  let ch=window.innerHeight;
+  let cw=Math.max(1,canvas.getBoundingClientRect().width);
+  let ch=Math.max(1,canvas.getBoundingClientRect().height);
 
   const resize=()=>{
-    cw=window.innerWidth;
-    ch=window.innerHeight;
-    canvas.width=Math.floor(cw*dpr);
-    canvas.height=Math.floor(ch*dpr);
-    canvas.style.width=cw+'px';
-    canvas.style.height=ch+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx=setupCanvas(canvas);
+    const rect=canvas.getBoundingClientRect();
+    cw=Math.max(1,rect.width);
+    ch=Math.max(1,rect.height);
   };
   resize();
 
@@ -1290,14 +1296,14 @@ function startRippleSystem() {
         if(u<0.10) sa*=u/0.10;
         else if(u>0.88) sa*=(1-u)/0.12;
         if(sa>0){
-          const rr=stone.r*(0.9+0.15*Math.min(dpr,2));
+          const rr=vizWidth(stone.r);
           ctx.globalAlpha=vizAlpha(sa);
           ctx.beginPath();
           ctx.arc(x,y,rr,0,Math.PI*2);
           ctx.fill();
           ctx.globalAlpha=vizAlpha(sa*0.35);
           ctx.beginPath();
-          ctx.arc(x+1,y+1,Math.max(1.2,rr*0.52),0,Math.PI*2);
+          ctx.arc(x+1,y+1,vizWidth(Math.max(1.2,stone.r*0.52)),0,Math.PI*2);
           ctx.fill();
         }
       }
