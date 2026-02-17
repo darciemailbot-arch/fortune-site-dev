@@ -142,7 +142,7 @@
 
 
   /* Koi Fish */
-  .koi{position:absolute;opacity:0;will-change:transform,opacity}
+  .koi{position:absolute;opacity:0;will-change:opacity}
   .koi-svg{width:100%;height:auto;overflow:visible;display:block}
   .koi .kv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
   .koi-body{stroke-width:1.8;opacity:.14}
@@ -259,7 +259,7 @@
   .ripple canvas{width:100%;height:100%;display:block}
 
   /* Serpent Path */
-  .serpent{position:absolute;opacity:0;will-change:transform,opacity}
+  .serpent{position:absolute;opacity:0;will-change:opacity}
   .serpent svg{width:100%;height:100%;overflow:visible}
   .serpent .sv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
 
@@ -320,7 +320,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.5";
+const BUILD = "dev-0.1.6";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 
@@ -351,6 +351,12 @@ let lastSandAngleIdx = -1;
 // Tier 0: Low-end (budget Android, older devices) — minimal, battery-safe
 // Tier 1: Mid-range (typical phone, most tablets) — restrained but alive
 // Tier 2: High-end (flagship phones, desktops) — full visual richness
+//
+// Single Transform Writer Rule (anti-jitter):
+// - A given element must have exactly one transform writer.
+// - If JS RAF writes element.style.transform, CSS on that same element must not animate transform.
+// - If both are needed, split: container handles JS position, child handles CSS sway/rotation.
+// This prevents Safari axis snaps from competing transform timelines.
 
 const _coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 const _narrow = !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
@@ -1399,7 +1405,6 @@ function spawnSerpent() {
     if(p<.08) op=V.opMax*(p/.08);
     else if(p>.92) op=V.opMax*((1-p)/.08);
     s.style.opacity=Math.max(0,op).toFixed(3);
-    s.style.transform='translate(0,0)';
 
     s._raf=requestAnimationFrame(step);
   };
@@ -1615,7 +1620,6 @@ function spawnKoi() {
   k.style.height=vh+'px';
   k.style.left='0px';
   k.style.top='0px';
-  k.style.transform='translate(0,0)';
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox',`0 0 ${vw} ${vh}`);
   svg.style.overflow='visible';
