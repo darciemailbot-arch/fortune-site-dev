@@ -359,7 +359,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.14";
+const BUILD = "dev-0.2.15";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -568,6 +568,7 @@ let cookiePosLocked = false;
 let lastSandAngleIdx = -1;
 let bootstrapFirstVisualPending = true;
 let postSeedVisualTimer = null;
+let fastSpawnUntil = 0;
 
 // ============ DEVICE CAPABILITY TIER SYSTEM ============
 // Progressive enhancement — no user-agent sniffing. Uses feature queries only.
@@ -668,7 +669,14 @@ const RAF_MIN_STEP = V.rafStep;
 
 // Jitter helper — adds random offset to prevent synchronized starts
 function jitter(baseMs) {
+  if(performance.now() < fastSpawnUntil){
+    const fastBase=Math.max(60, baseMs * 0.18 * V.spawnScale);
+    return fastBase + Math.random()*220;
+  }
   return baseMs * V.spawnScale + V.jitterMin + Math.random() * (V.jitterMax - V.jitterMin);
+}
+function armFastSpawnWindow(ms=2600){
+  fastSpawnUntil = performance.now() + ms;
 }
 // Scale duration for device
 function mobDur(baseMs) { return baseMs * V.durScale; }
@@ -790,13 +798,14 @@ function startActiveVisual() {
   else if(activeVisual==='sand') { startSandGarden(); }
   else if(activeVisual==='ripple') { startRippleSystem(); }
   else if(activeVisual==='serpent') { spawnSerpent(); startSerpent(); }
-  else if(activeVisual==='bee') { startBees(); }
+  else if(activeVisual==='bee') { spawnBee(); startBees(); }
   else if(activeVisual==='firefly') { startFireflies(); }
   else { spawnBrush(); startBrush(); }
 }
 
 function spawnQuickVisualSeed() {
   clearVisuals();
+  armFastSpawnWindow(3000);
   const launchTypes=['koi','blossom','feather','seeds','spirals','brush','birds','bee','sand'];
   activeVisual=launchTypes[Math.floor(Math.random()*launchTypes.length)];
   window.__BOOTSTRAP_VIZ_BOOST = Math.max(1.25, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
@@ -1915,6 +1924,7 @@ function startRippleSystem() {
 }
 
 function pickVisual() {
+  armFastSpawnWindow(3000);
   clearVisuals();
   if(bootstrapFirstVisualPending){
     bootstrapFirstVisualPending=false;
