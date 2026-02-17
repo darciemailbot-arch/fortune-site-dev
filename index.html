@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#EBDCB8">
+<title>Fortune</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--sage:#7a9a7e;--sage-dark:#5c7e60;--sage-light:#a3bfa6;--sage-pale:#c8daca;--sage-faint:#e2ede3;--bg:#EBDCB8;--ink:#4a6b4e;--red:#1D2545;--red-light:#1D254540}
+  body[data-theme='dark']{--bg:#1D2545;--ink:#d6ccb7;--sage:#7d8f82;--sage-dark:#9fb2a3;--sage-light:#8fa396;--sage-pale:#5d6d63;--sage-faint:#2d332f;--red:#E8DFC5;--red-light:#E8DFC533}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;-webkit-font-smoothing:antialiased;transition:background-color 1s ease,color 1s ease}
+
+  /* Gentle theme crossfade for palette-based properties */
+  .theme-toggle,.lb,.ls,.fortune,.nums,.signoff,.cookie-btn span,.cookie-btn .ck,
+  .bird .bw,.sd .sp,.sd .spd,.spiral .sw,.crane .cw,.cloud .cl,.koi .kv,.ink .iv,.blossom .bv,.feather .fv,.brush .br,
+  .stars,.star,.shooting-star{
+    transition:color 1s ease,background-color 1s ease,border-color 1s ease,stroke 1s ease,fill 1s ease;
+  }
+
+  /* Background depth layers */
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 100%, white 0%) 0%, transparent 100%);
+    opacity:.35}
+  body[data-theme='dark']::before{
+    background:radial-gradient(ellipse 70% 60% at 52% 42%, color-mix(in srgb, var(--bg) 100%, #2a2a3a 0%) 0%, transparent 100%);
+    opacity:.2}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 50%, rgba(0,0,0,.05) 100%)}
+  body[data-theme='dark'] .vignette{
+    background:radial-gradient(ellipse 80% 75% at 50% 50%, transparent 45%, rgba(0,0,0,.12) 100%)}
+
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");background-repeat:repeat;background-size:200px 200px}
+  body[data-theme='dark']::after{background-image:none}
+
+  .lang{position:fixed;top:12px;left:12px;z-index:20;display:flex;align-items:center;gap:3px;opacity:0;animation:fin 1.73s ease forwards 2.9s}
+  .theme-toggle{position:fixed;top:10px;right:12px;z-index:20;width:34px;height:34px;border:1px solid var(--red-light);border-radius:999px;background:#0000;color:var(--red);display:grid;place-items:center;cursor:pointer;opacity:0;animation:fin 1.73s ease forwards 2.9s;-webkit-tap-highlight-color:transparent;transition:background .25s,border-color .25s,color .25s,transform .2s}
+  .theme-toggle:active{transform:scale(.94)}
+  .theme-toggle:hover{background:var(--red-light)}
+  .theme-toggle .sun,.theme-toggle .moon{display:flex;align-items:center;justify-content:center;line-height:0}
+  .theme-toggle .sun{display:none}
+  body[data-theme='dark'] .theme-toggle .sun{display:flex}
+  body[data-theme='dark'] .theme-toggle .moon{display:none}
+  .lb{background:none;border:none;font-size:11px;color:var(--red);cursor:pointer;padding:5px 6px;border-radius:4px;transition:all .25s;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+  .lb:active,.lb.on{color:var(--red);background:var(--red-light)}
+  .ls{color:var(--red);font-size:8px;user-select:none;opacity:.45}
+
+  .center{position:relative;z-index:4;width:100%;max-width:360px;padding:0 24px;display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 auto}
+  .fortune{font-family:'Caveat',cursive;font-size:2rem;line-height:1.5;color:var(--red);max-width:340px;text-align:center;margin-top:-130px;opacity:0;transition:opacity 1s ease,transform 1s ease;transform:translateY(6px);padding:0 4px}
+  .fortune.v{opacity:1;transform:translateY(0)}
+  .fortune.cjk{font-family:'Noto Sans SC','Noto Sans JP','Noto Sans KR',sans-serif;font-weight:300;font-size:1.35rem;line-height:1.8}
+  .prompt{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:300;font-style:italic;color:var(--red)}
+  .nums{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:600;color:var(--red);letter-spacing:.12em;margin-top:14px;opacity:0;transition:opacity 1.34s ease .2s}
+  .nums.v{opacity:1}
+
+  /* Fortune cookie button */
+  .cookie-btn{background:none;border:none;cursor:pointer;position:fixed;left:0;right:0;margin-left:auto;margin-right:auto;width:max-content;padding:8px;opacity:0;animation:fin 2.6s ease forwards 3.2s;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .2s}
+  .cookie-btn:active{transform:scale(.94)}
+  .cookie-btn svg{width:70px;height:56px;overflow:visible}
+  .cookie-btn .ck{fill:none;stroke:var(--red);stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s}
+  .cookie-btn:active .ck{stroke:var(--red)}
+  .cookie-btn span{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:600;color:var(--red);letter-spacing:.12em;transition:color .3s}
+  .cookie-btn:active span{color:var(--red)}
+  .cookie-btn span#btnTxt{font-size:.85rem;letter-spacing:.06em;opacity:.72;visibility:visible;pointer-events:none;text-transform:lowercase}
+
+  .signoff{position:fixed;bottom:18px;left:0;right:0;text-align:center;z-index:7;pointer-events:none;opacity:0;animation:fin 1.73s ease forwards 4.2s;font-family:'Caveat',cursive;color:var(--red);letter-spacing:.06em;display:block}
+  .signoff .a,.signoff .c{font-size:.75rem;opacity:.5}
+  .signoff .w{font-size:.95rem;opacity:.5;font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;text-decoration-color:var(--red)}
+  .build-indicator{
+    position:absolute;
+    bottom:10px;
+    right:14px;
+    font-family:inherit;
+    font-size:10px;
+    letter-spacing:.08em;
+    opacity:.32;
+    pointer-events:none;
+    user-select:none;
+    z-index:5;
+    transition:opacity .3s ease;
+  }
+  body[data-theme="dark"] .build-indicator{opacity:.42}
+  body:not([data-theme="dark"]) .build-indicator{opacity:.28}
+
+  @keyframes fin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .blob{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;transition:transform 2s}
+  .ba{width:250px;height:250px;top:-80px;right:-100px;background:var(--sage-faint);opacity:.3}
+  .bb{width:180px;height:180px;bottom:80px;left:-60px;background:var(--sage-pale);opacity:.18}
+  body[data-theme='dark'] .blob{display:none}
+
+  /* Visuals layer */
+  .vis{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+  .vis-fade-out{animation-play-state:paused !important;opacity:0 !important;transition:opacity .9s ease !important}
+
+  /* Birds */
+  .bird{position:absolute;opacity:0;animation:bf linear forwards}
+  .bird svg{width:100%;height:100%;overflow:visible}
+  .bird .wing{fill:none;stroke:var(--red);stroke-width:1.55;stroke-linecap:round;stroke-linejoin:miter}
+  .bird{--bop1:.12;--bop2:.08;--bop3:.04}
+  .bird .wl, .bird .wr{
+    transform-origin:10px 6px;
+    -webkit-transform-origin:10px 6px;
+  }
+  .bird .wl{animation:wing-l var(--fs) ease-in-out infinite}
+  .bird .wr{animation:wing-r var(--fs) ease-in-out infinite}
+  @keyframes bf{0%{opacity:0;transform:translateX(0) translateY(0)}3%{opacity:var(--bop1,.12)}50%{opacity:var(--bop2,.08);transform:translateX(calc(var(--tr)*.5)) translateY(var(--dr))}97%{opacity:var(--bop3,.04)}100%{opacity:0;transform:translateX(var(--tr)) translateY(calc(var(--dr)*1.5))}}
+  @keyframes wing-l{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(8deg)}}
+  @keyframes wing-r{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-8deg)}}
+  body:not([data-theme='dark']) .bird{mix-blend-mode:multiply;--bop1:.18;--bop2:.12;--bop3:.06}
+  body:not([data-theme='dark']) .bird .wing{stroke-width:1.85}
+
+  /* Seeds */
+  .sd{position:absolute;opacity:0;animation:sf linear forwards}
+  .sd svg{width:100%;height:100%}
+  .sd .sp{fill:none;stroke:var(--red);stroke-width:.8;stroke-linecap:round}
+  .sd .spd{fill:var(--red);opacity:.12}
+  @keyframes sf{0%{opacity:0;transform:translate(0,0) rotate(0)}5%{opacity:.12}50%{opacity:.08}95%{opacity:.04}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot))}}
+
+  /* Wind spirals */
+  .spiral{position:absolute;opacity:0;animation:sp-drift linear forwards}
+  .spiral svg{width:100%;height:100%}
+  .spiral .sw{fill:none;stroke:var(--red);stroke-width:.8;stroke-linecap:round}
+  @keyframes sp-drift{0%{opacity:0;transform:translateX(0) translateY(0) rotate(0)}5%{opacity:.10}50%{opacity:.07;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) rotate(180deg)}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(360deg)}}
+
+  /* Crane wings */
+  .crane{position:absolute;opacity:0;animation:cr-drift linear forwards}
+  .crane svg{width:100%;height:100%}
+  .crane .cw{fill:none;stroke:var(--red);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes cr-drift{0%{opacity:0;transform:translateX(0) translateY(0) scale(.95)}8%{opacity:.11}50%{opacity:.07;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) scale(1)}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) scale(1.03)}}
+
+  /* Cloud wisps */
+  .cloud{position:absolute;opacity:0;animation:cl-drift linear forwards}
+  .cloud svg{width:100%;height:100%}
+  .cloud .cl{fill:none;stroke:var(--red);stroke-width:.9;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes cl-drift{0%{opacity:0;transform:translateX(0)}8%{opacity:.10}50%{opacity:.06;transform:translateX(calc(var(--tx)*.5))}95%{opacity:.03}100%{opacity:0;transform:translateX(var(--tx))}}
+
+
+  /* Koi Fish */
+  .koi{position:absolute;opacity:0;will-change:transform,opacity}
+  .koi-svg{width:100%;height:auto;overflow:visible;display:block}
+  .koi .kv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
+  .koi-body{stroke-width:1.8;opacity:.14}
+  .koi-tail{stroke-width:1.5;opacity:.12}
+  .koi-fin{stroke-width:1.2;opacity:.10}
+  .koi-eye{fill:var(--red);opacity:.10}
+  @keyframes koi-drift{0%{opacity:0;transform:translateX(0) translateY(0) rotate(0) scaleX(var(--sx))}10%{opacity:.28}50%{opacity:.2;transform:translateX(calc(var(--tx)*.5)) translateY(calc(var(--ty)*.5)) rotate(var(--rm)) scaleX(var(--sx))}95%{opacity:.08}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(calc(var(--rm)*2)) scaleX(var(--sx))}}
+
+  /* Ink Droplet */
+  .ink{position:absolute;opacity:0;animation:ink-drift linear forwards}
+  .ink svg{width:100%;height:100%}
+  .ink .iv{fill:none;stroke:var(--red);stroke-linecap:round}
+  @keyframes ink-drop{0%{r:0;opacity:.12;stroke-width:1.35}50%{r:12;opacity:.06;stroke-width:.72}100%{r:0;opacity:.12;stroke-width:1.35}}
+  @keyframes ripple1{0%{r:0;opacity:.10}50%{r:18;opacity:0}100%{r:0;opacity:.10}}
+  @keyframes ripple2{0%{r:0;opacity:.07}50%{r:24;opacity:0}100%{r:0;opacity:.07}}
+  @keyframes ink-drift{0%{opacity:0;transform:translateX(0) translateY(0) scale(.92)}12%{opacity:.10;transform:translateX(0) translateY(0) scale(1)}80%{opacity:.06;transform:translateX(0) translateY(0) scale(1.03)}100%{opacity:0;transform:translateX(0) translateY(0) scale(1.06)}}
+
+  /* Cherry Blossom */
+  .blossom{position:absolute;opacity:0;animation:blossom-drift linear forwards}
+  .blossom svg{width:100%;height:100%}
+  .blossom .bv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round;stroke-width:1.15}
+  @keyframes blossom-fall{0%{transform:translateY(0) rotate(0) translateX(0)}25%{transform:translateY(12px) rotate(15deg) translateX(8px)}50%{transform:translateY(26px) rotate(-10deg) translateX(-6px)}75%{transform:translateY(38px) rotate(20deg) translateX(10px)}100%{transform:translateY(0) rotate(0) translateX(0)}}
+  @keyframes blossom-drift{0%{opacity:0;transform:translateX(0) translateY(0)}10%{opacity:.18}60%{opacity:.12;transform:translateX(calc(var(--tx)*.6)) translateY(calc(var(--ty)*.6))}100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty))}}
+
+  /* Feather */
+  .feather{
+    position:absolute;
+    pointer-events:none;
+    will-change:transform,opacity;
+    opacity:0;
+    animation:feather-fall var(--t,18s) linear forwards;
+  }
+  .feather svg{
+    width:100%;
+    height:100%;
+    overflow:visible;
+    transform-origin:50% 50%;
+    animation:feather-sway calc(var(--t,18s) * 0.55) ease-in-out infinite;
+    animation-delay:calc(var(--p,0) * -0.65s);
+  }
+  .feather .fv{stroke:var(--red);fill:none;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes feather-fall{
+    from{transform:translate3d(var(--x0,0px),-12vh,0);opacity:0}
+    12%{opacity:var(--fo,.12)}
+    68%{opacity:var(--fo,.12)}
+    to{transform:translate3d(var(--x0,0px),112vh,0);opacity:0}
+  }
+  @keyframes feather-sway{
+    0%{transform:translate3d(0,0,0) rotate(calc(var(--rot) * -0.35))}
+    25%{transform:translate3d(calc(var(--sx) * 0.55),0,0) rotate(calc(var(--rot) * 0.55))}
+    50%{transform:translate3d(var(--sx),0,0) rotate(var(--rot))}
+    75%{transform:translate3d(calc(var(--sx) * 0.35),0,0) rotate(calc(var(--rot) * 0.25))}
+    100%{transform:translate3d(0,0,0) rotate(calc(var(--rot) * -0.35))}
+  }
+
+  /* Brushstroke */
+  .brush{position:absolute;opacity:0;animation:brush-drift linear forwards}
+  .brush svg{width:100%;height:100%}
+  .brush svg path{stroke-linecap:round;fill:none}
+  .brush .br{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
+  @keyframes brush-sweep{0%{stroke-dashoffset:120;opacity:0}15%{opacity:.10}50%{stroke-dashoffset:0;opacity:.07}85%{opacity:.10}100%{stroke-dashoffset:-120;opacity:0}}
+  @keyframes brush-drift{
+    0%{opacity:0;transform:translateX(0) translateY(0) rotate(0deg)}
+    12%{opacity:.2}
+    25%{transform:translateX(var(--mx1)) translateY(var(--my1)) rotate(var(--r1))}
+    50%{opacity:.18;transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
+    75%{transform:translateX(var(--mx3)) translateY(var(--my3)) rotate(var(--r3))}
+    100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r4))}
+  }
+
+  /* Stars (diamond variation, restrained) */
+  .stars{position:absolute;inset:0;pointer-events:none;opacity:0;animation:stars-in 1.2s ease forwards;color:color-mix(in srgb,var(--red) 90%,#b89091 10%)}
+  .star{
+    position:absolute;
+    background:currentColor;
+    opacity:var(--so,.08);
+    transform:rotate(45deg) scale(var(--gs,1));
+    transform-origin:center;
+    animation:star-breathe var(--sd,10s) ease-in-out var(--delay,0s) infinite alternate;
+    transition:transform .35s ease,opacity .35s ease;
+    will-change:opacity,transform
+  }
+  body[data-theme='dark'] .stars{color:#e0b5ad}
+  .shooting-star{
+    position:absolute;
+    left:0;
+    top:0;
+    width:var(--sw,42px);
+    height:2px;
+    border-radius:2px;
+    background:currentColor;
+    opacity:0;
+    transform:translate(var(--sx,0),var(--sy,0)) rotate(var(--sa,22deg));
+    transform-origin:left center;
+    animation:star-shoot var(--sdur,2200ms) ease-in-out forwards;
+  }
+  @keyframes stars-in{from{opacity:0}to{opacity:1}}
+  @keyframes star-breathe{from{opacity:var(--so,.08)}to{opacity:var(--sp,.2)}}
+  @keyframes star-shoot{
+    0%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scaleX(.3)}
+    10%{opacity:.16}
+    40%{opacity:.12;transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
+    80%{opacity:.06;transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
+    100%{opacity:0;transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa)) scaleX(.2)}
+  }
+
+  /* Sand */
+  .sand{position:absolute;inset:0;pointer-events:none;opacity:0;animation:sand-in 1200ms ease forwards}
+  .sand canvas{width:100%;height:100%;display:block}
+  @keyframes sand-in{from{opacity:0}to{opacity:1}}
+
+  /* Ripple (stone skip, no stone) */
+  .ripple{position:absolute;inset:0;pointer-events:none;opacity:0;animation:sand-in 1200ms ease forwards}
+  .ripple canvas{width:100%;height:100%;display:block}
+
+  /* Serpent Path */
+  .serpent{position:absolute;opacity:0;will-change:transform,opacity}
+  .serpent svg{width:100%;height:100%;overflow:visible}
+  .serpent .sv{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
+
+  /* Golden Bee Hover */
+  .bee{position:absolute;opacity:0;will-change:transform,opacity;filter:blur(.2px)}
+  .bee svg{width:100%;height:100%}
+  .bee .bz{fill:color-mix(in srgb,var(--red) 70%,#000 30%);opacity:.28;stroke:none}
+  .bee .bzo{fill:none;stroke:color-mix(in srgb,var(--red) 68%,#000 32%);stroke-width:1;opacity:.22}
+  .bee-trail{position:absolute;inset:0;pointer-events:none}
+  .bee-trail canvas{width:100%;height:100%;display:block}
+
+  /* Firefly Drift */
+  .firefly{position:absolute;border-radius:50%;background:var(--red);opacity:0;will-change:transform,opacity;filter:blur(1px)}
+  @keyframes firefly-glow{0%,100%{opacity:0}15%{opacity:var(--fo,.08)}50%{opacity:var(--fp,.12)}85%{opacity:var(--fo,.08)}}
+
+  @media (prefers-reduced-motion: reduce){
+    .star{animation:none !important;opacity:var(--so,.08) !important}
+    .shooting-star{animation:none !important;opacity:0 !important}
+  }
+
+  @media (pointer: coarse){
+    .bee,.firefly{filter:none}
+    .koi,.serpent,.star,.firefly,.bee{will-change:auto}
+  }
+</style>
+</head>
+<body>
+
+<div class="lang">
+  <button class="lb on" data-lang="en" onclick="setLang('en')">EN</button><span class="ls">·</span>
+  <button class="lb" data-lang="zh" onclick="setLang('zh')">中文</button><span class="ls">·</span>
+  <button class="lb" data-lang="fr" onclick="setLang('fr')">FR</button><span class="ls">·</span>
+  <button class="lb" data-lang="es" onclick="setLang('es')">ES</button>
+</div>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+  <span class="sun" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg></span>
+  <span class="moon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+</button>
+
+<div class="blob ba" id="ba"></div><div class="blob bb" id="bb"></div>
+<div class="vignette"></div>
+<div class="vis" id="vis"></div>
+
+<div class="center">
+  <div class="fortune" id="fortune"></div>
+  <div class="nums" id="nums"></div>
+</div>
+
+<button class="cookie-btn" id="btn" onclick="reveal(event)">
+  <svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path class="ck" d="M18 52 C20 34,32 20,51 12 C72 4,93 7,102 21 C110 33,110 55,100 69 C90 82,71 88,50 89 C37 89,26 85,23 76 C21 68,24 58,34 46 C41 38,49 30,53 23 C56 18,57 13,55 9 M53 46 C42 49,28 54,18 54 C10 54,7 49,8 42 C10 30,20 19,35 12 M32 78 C43 73,58 71,77 70 C69 76,56 82,42 84 C34 85,30 83,32 78"/>
+  </svg>
+  <span id="btnTxt">tap me!</span>
+</button>
+
+<div class="signoff"><span class="a">A </span><span class="w">Wild</span><span class="c"> Creation</span></div>
+
+<script>
+const VIS = document.getElementById('vis');
+const BUILD = "dev-0.1.3";
+const THEME_KEY = 'fortuneTheme';
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+function applyTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#1d1a16' : '#EBDCB8');
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'light' || saved === 'dark') return applyTheme(saved);
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(prefersDark ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem(THEME_KEY, next);
+}
+let activeVisual = null;
+let visTimers = [];
+let cookiePosLocked = false;
+let lastSandAngleIdx = -1;
+
+// ============ DEVICE CAPABILITY TIER SYSTEM ============
+// Progressive enhancement — no user-agent sniffing. Uses feature queries only.
+// Tier 0: Low-end (budget Android, older devices) — minimal, battery-safe
+// Tier 1: Mid-range (typical phone, most tablets) — restrained but alive
+// Tier 2: High-end (flagship phones, desktops) — full visual richness
+
+const _coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+const _narrow = !!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+const _isMobile = _coarse || _narrow;
+const _reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const _cores = navigator.hardwareConcurrency || 4;
+const _mem = navigator.deviceMemory || 4; // Chrome/Samsung/Edge expose this; Safari returns undefined→4
+const _dpr = window.devicePixelRatio || 1;
+
+// Scoring: each signal contributes to a capability score
+let _score = 0;
+if (_cores >= 8) _score += 2;
+else if (_cores >= 6) _score += 1;
+if (_mem >= 6) _score += 2;
+else if (_mem >= 4) _score += 1;
+if (_dpr >= 2.5) _score += 1; // high-res display = usually flagship
+if (!_isMobile) _score += 2; // desktop gets a boost
+if (_reducedMotion) _score -= 10; // reduced-motion user → force Tier 0
+
+// Derive tier
+const TIER = _reducedMotion ? 0 : (_score >= 4 ? 2 : (_score >= 2 ? 1 : 0));
+
+// ============ TIER PARAMETER SETS ============
+const TIERS = [
+  // TIER 0 — Low-end / reduced-motion
+  {
+    distScale: 0.65, durScale: 1.50,
+    opMax: 0.09, opSafe: 0.04, opPeak: 0.11,
+    countOffset: -2, spawnScale: 1.50,
+    jitterMin: 2000, jitterMax: 5000,
+    rafStep: 50, // ~20fps cap
+    koi:     { max: 1, initial: 1 },
+    ink:     { max: 1, initial: 1 },
+    firefly: { max: 1, initial: 1 },
+    stars:   { max: 10, shootFreqMs: 20000 },
+    blossom: { max: 3, initial: 2 },
+    feather: { max: 1, initial: 1 },
+    birds:   { max: 2, initial: 1 },
+    brush:   { max: 2, initial: 1 },
+    serpent: { max: 1 },
+    bee:     { max: 1, initial: 1 },
+    sand:    { drawRate: 0.5 },
+  },
+  // TIER 1 — Mid-range (typical phone)
+  {
+    distScale: 0.80, durScale: 1.30,
+    opMax: 0.12, opSafe: 0.05, opPeak: 0.14,
+    countOffset: -1, spawnScale: 1.25,
+    jitterMin: 1000, jitterMax: 4000,
+    rafStep: 34, // ~30fps cap
+    koi:     { max: 1, initial: 1 },
+    ink:     { max: 1, initial: 1 },
+    firefly: { max: 2, initial: 2 },
+    stars:   { max: 16, shootFreqMs: 14000 },
+    blossom: { max: 5, initial: 3 },
+    feather: { max: 1, initial: 1 },
+    birds:   { max: 3, initial: 2 },
+    brush:   { max: 4, initial: 2 },
+    serpent: { max: 1 },
+    bee:     { max: 2, initial: 2 },
+    sand:    { drawRate: 0.7 },
+  },
+  // TIER 2 — High-end (flagship / desktop)
+  {
+    distScale: 1.0, durScale: 1.0,
+    opMax: 0.14, opSafe: 0.08, opPeak: 0.16,
+    countOffset: 0, spawnScale: 1.0,
+    jitterMin: 0, jitterMax: 0,
+    rafStep: 16, // 60fps
+    koi:     { max: 2, initial: 2 },
+    ink:     { max: 3, initial: 2 },
+    firefly: { max: 5, initial: 4 },
+    stars:   { max: 22, shootFreqMs: 8000 },
+    blossom: { max: 9, initial: 5 },
+    feather: { max: 2, initial: 1 },
+    birds:   { max: 6, initial: 3 },
+    brush:   { max: 7, initial: 3 },
+    serpent: { max: 2 },
+    bee:     { max: 4, initial: 3 },
+    sand:    { drawRate: 1.0 },
+  }
+];
+
+const V = TIERS[TIER];
+const RAF_MIN_STEP = V.rafStep;
+
+// Jitter helper — adds random offset to prevent synchronized starts
+function jitter(baseMs) {
+  return baseMs * V.spawnScale + V.jitterMin + Math.random() * (V.jitterMax - V.jitterMin);
+}
+// Scale duration for device
+function mobDur(baseMs) { return baseMs * V.durScale; }
+// Scale distance for device
+function mobDist(basePx) { return basePx * V.distScale; }
+// Clamp opacity
+function mobOp(val, nearSafe) { return Math.min(nearSafe ? V.opSafe : V.opMax, val); }
+
+const VISUAL_INTENSITY = [1.0, 1.5, 2.3][TIER];
+const scaledCount = n => Math.max(1, Math.round(n * VISUAL_INTENSITY) + V.countOffset);
+const scaledInterval = n => Math.max([900, 650, 350][TIER], Math.round(n / VISUAL_INTENSITY * V.spawnScale));
+
+// ============ VISIBILITY / LIFECYCLE CLEANUP ============
+// Works across Safari, Chrome, Samsung Internet, Firefox
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Clear all scheduled spawns — prevents timer buildup when backgrounded
+    visTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
+    visTimers = [];
+    // Cancel all rAF loops on current visual elements
+    Array.from(VIS.children).forEach(el => {
+      if (el._raf) cancelAnimationFrame(el._raf);
+    });
+    // Full visual teardown
+    clearVisuals();
+  } else {
+    // Page resumed — restart visuals so the page feels alive
+    setTimeout(() => { if (!isTransitioning && typeof pickVisual === 'function') pickVisual(); }, 400);
+  }
+});
+
+// Android Chrome aggressively throttles background tabs and may fire
+// pagehide/freeze events. Clean up on those too.
+if ('onfreeze' in document) {
+  document.addEventListener('freeze', () => {
+    visTimers.forEach(t => { clearTimeout(t); clearInterval(t); });
+    visTimers = [];
+  });
+}
+// Samsung Internet and some Android browsers fire pageshow on BFCache restore.
+// Re-trigger visual on return so the page doesn't look dead.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted && activeVisual) {
+    // Page restored from BFCache — restart current visual
+    clearVisuals();
+    setTimeout(() => { if (typeof pickVisual === 'function') pickVisual(); }, 300);
+  }
+});
+
+// Safe zone check
+function inSafe(x, y, s) {
+  const vw=window.innerWidth, vh=window.innerHeight, cx=vw/2, cy=vh/2;
+  const sw=Math.min(360,vw*.85), sh=vh*.55;
+  return x>cx-sw/2-s && x<cx+sw/2 && y>cy-sh/2-s && y<cy+sh/2;
+}
+
+function fadeOutAndRemove(el, ms=900) {
+  if(!el || el.dataset.fading==='1') return;
+  el.dataset.fading='1';
+  if(el._raf) cancelAnimationFrame(el._raf);
+  if(typeof el._stop==='function') el._stop();
+  el.classList.add('vis-fade-out');
+  setTimeout(()=>{
+    if(typeof el._onRemove==='function') el._onRemove();
+    el.remove();
+  }, ms);
+}
+
+// ======== BEE TRAIL CANVAS (SHARED) ========
+let beeTrailLayer=null;
+let beeTrailCanvas=null;
+let beeTrailCtx=null;
+let beeTrailRAF=0;
+let beeTrailSeq=0;
+const beeTrailPoints=[];
+const BEE_TRAIL_MAX_PER_BEE=24;
+const BEE_TRAIL_MAX_TOTAL=120;
+
+function ensureBeeTrailCanvas() {
+  if(beeTrailLayer && beeTrailLayer.isConnected && beeTrailCtx) return;
+  beeTrailLayer=document.createElement('div');
+  beeTrailLayer.className='bee-trail';
+  beeTrailCanvas=document.createElement('canvas');
+  beeTrailLayer.appendChild(beeTrailCanvas);
+  VIS.appendChild(beeTrailLayer);
+  beeTrailCtx=beeTrailCanvas.getContext('2d',{alpha:true,desynchronized:true});
+  resizeBeeTrailCanvas();
+  if(!beeTrailRAF) beeTrailRAF=requestAnimationFrame(renderBeeTrail);
+}
+
+function resizeBeeTrailCanvas() {
+  if(!beeTrailCanvas || !beeTrailCtx) return;
+  const w=window.innerWidth;
+  const h=window.innerHeight;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  beeTrailCanvas.width=Math.floor(w*dpr);
+  beeTrailCanvas.height=Math.floor(h*dpr);
+  beeTrailCanvas.style.width=w+'px';
+  beeTrailCanvas.style.height=h+'px';
+  beeTrailCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function addBeeTrailPoint(id,x,y,now){
+  beeTrailPoints.push({x,y,t:now,id,life:2200+Math.random()*1000});
+  let seen=0;
+  for(let i=beeTrailPoints.length-1;i>=0;i--){
+    if(beeTrailPoints[i].id!==id) continue;
+    seen++;
+    if(seen>BEE_TRAIL_MAX_PER_BEE) beeTrailPoints.splice(i,1);
+  }
+  while(beeTrailPoints.length>BEE_TRAIL_MAX_TOTAL) beeTrailPoints.shift();
+}
+
+function renderBeeTrail(now){
+  if(!beeTrailLayer || !beeTrailLayer.isConnected || !beeTrailCtx){
+    beeTrailRAF=0;
+    return;
+  }
+  const w=window.innerWidth;
+  const h=window.innerHeight;
+  beeTrailCtx.clearRect(0,0,w,h);
+  const c=getComputedStyle(document.body).getPropertyValue('--red').trim() || '#222';
+  beeTrailCtx.fillStyle=c;
+  for(let i=beeTrailPoints.length-1;i>=0;i--){
+    const p=beeTrailPoints[i];
+    const age=now-p.t;
+    if(age>p.life){ beeTrailPoints.splice(i,1); continue; }
+    const f=age/p.life;
+    const a=0.16*(1-Math.pow(f,1.3));
+    if(a<=0) continue;
+    beeTrailCtx.globalAlpha=a;
+    const r=((i%5)===0?1.25:1.6);
+    beeTrailCtx.beginPath();
+    beeTrailCtx.arc(p.x,p.y,r,0,Math.PI*2);
+    beeTrailCtx.fill();
+  }
+  beeTrailCtx.globalAlpha=1;
+  beeTrailRAF=requestAnimationFrame(renderBeeTrail);
+}
+
+window.addEventListener('resize',resizeBeeTrailCanvas,{passive:true});
+
+function clearVisuals() {
+  visTimers.forEach(t=>clearTimeout(t));
+  visTimers=[];
+  Array.from(VIS.children).forEach(el=>fadeOutAndRemove(el,900));
+}
+
+function positionCookie(force=false) {
+  if (cookiePosLocked && !force) return;
+  const btn=document.getElementById('btn');
+  const nums=document.getElementById('nums');
+  const signoff=document.querySelector('.signoff');
+  if(!btn||!nums||!signoff) return;
+  const numsBottom=nums.getBoundingClientRect().bottom;
+  const signoffTop=signoff.getBoundingClientRect().top;
+  // Bias cookie lower (toward signoff) so it doesn't crowd lucky numbers on mobile.
+  const mid=numsBottom + (signoffTop-numsBottom)*0.6;
+  const btnH=btn.getBoundingClientRect().height;
+  btn.style.top=(mid - btnH/2)+'px';
+  btn.style.bottom='auto';
+  cookiePosLocked = true;
+}
+
+// ======== BIRDS ========
+const BIRD_LANES = [8,16,24,32,64,72,80];
+const activeBirdLanes = new Set();
+
+function spawnBird() {
+  const b=document.createElement('div');b.className='bird';
+  const sz=18+Math.random()*14, fl=Math.random()>.5;
+  const freeLanes=BIRD_LANES.filter(v=>!activeBirdLanes.has(v));
+  if(!freeLanes.length) return;
+  const y=freeLanes[Math.floor(Math.random()*freeLanes.length)];
+  activeBirdLanes.add(y);
+  const tr=(fl?1:-1)*(window.innerWidth+100);
+  const dr=0;
+  const dur=20+Math.random()*18, fs=(.4+Math.random()*.3)*1.15;
+  b.style.width=(sz*1.33)+'px';b.style.height=(sz*.55*1.33)+'px';
+  b.style.top=y+'%';
+  b.style.left=fl?'-70px':(window.innerWidth+30)+'px';
+  b.style.setProperty('--tr',tr+'px');
+  b.style.setProperty('--dr',dr+'px');
+  b.style.setProperty('--fs',fs+'s');
+  b.style.animationDuration=dur+'s';
+  b._onRemove=()=>activeBirdLanes.delete(y);
+  b.innerHTML=`<svg viewBox="0 0 20 12"><path class="wing wl" d="M10 6 L1 3"/><path class="wing wr" d="M10 6 L19 3"/></svg>`;
+  VIS.appendChild(b);
+  setTimeout(()=>fadeOutAndRemove(b,900),dur*1e3+500);
+}
+function startBirds() {
+  for(let i=0;i<V.birds.initial;i++) visTimers.push(setTimeout(spawnBird,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='birds'){clearInterval(iv);return;}if(VIS.querySelectorAll('.bird').length<V.birds.max)spawnBird();},jitter(4000+Math.random()*4000));
+  visTimers.push(iv);
+}
+
+// ======== SEEDS ========
+function spawnSeed() {
+  const s=document.createElement('div');s.className='sd';
+  const sz=12+Math.random()*12;
+  // Place on edges, avoid center
+  let x,y;
+  const edge=Math.floor(Math.random()*4);
+  const vw=window.innerWidth,vh=window.innerHeight;
+  if(edge===0){x=-5+Math.random()*vw*.15;y=Math.random()*vh;}
+  else if(edge===1){x=vw*.85+Math.random()*vw*.15;y=Math.random()*vh;}
+  else if(edge===2){x=Math.random()*vw;y=-5+Math.random()*vh*.15;}
+  else{x=Math.random()*vw;y=vh*.85+Math.random()*vh*.15;}
+
+  s.style.width=s.style.height=sz+'px';
+  s.style.left=x+'px';s.style.top=y+'px';
+  s.style.setProperty('--dx',(40+Math.random()*160)+'px');
+  s.style.setProperty('--dy',(-30+Math.random()*-80)+'px');
+  s.style.setProperty('--rot',(40+Math.random()*120)+'deg');
+  const dur=14+Math.random()*18;
+  s.style.animationDuration=dur+'s';
+  s.innerHTML=`<svg viewBox="0 0 20 24"><line class="sp" x1="10" y1="24" x2="10" y2="10"/><line class="sp" x1="10" y1="10" x2="4" y2="2"/><line class="sp" x1="10" y1="10" x2="16" y2="2"/><line class="sp" x1="10" y1="10" x2="10" y2="1"/><line class="sp" x1="10" y1="10" x2="3" y2="6"/><line class="sp" x1="10" y1="10" x2="17" y2="6"/><circle class="spd" cx="10" cy="10" r="1.2"/></svg>`;
+  VIS.appendChild(s);
+  setTimeout(()=>fadeOutAndRemove(s,900),(dur+1)*1e3);
+}
+function startSeeds() {
+  for(let i=0;i<scaledCount(5);i++) visTimers.push(setTimeout(spawnSeed,200+Math.random()*3000));
+  const iv=setInterval(()=>{if(activeVisual!=='seeds'){clearInterval(iv);return;}if(VIS.children.length<scaledCount(10))spawnSeed();},scaledInterval(2500+Math.random()*3000));
+  visTimers.push(iv);
+}
+
+// ======== WIND SPIRALS ========
+function spawnSpiral() {
+  const sp=document.createElement('div');sp.className='spiral';
+  const sz=10+Math.random()*15;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const edge=Math.floor(Math.random()*4);
+  let x,y,tx,ty;
+  if(edge===0){x=-sz;y=Math.random()*vh;tx=vw+sz*2;ty=(Math.random()-.5)*vh*.3;}
+  else if(edge===1){x=vw+sz;y=Math.random()*vh;tx=-(vw+sz*2);ty=(Math.random()-.5)*vh*.3;}
+  else if(edge===2){x=Math.random()*vw;y=-sz;tx=(Math.random()-.5)*vw*.3;ty=vh+sz*2;}
+  else{x=Math.random()*vw;y=vh+sz;tx=(Math.random()-.5)*vw*.3;ty=-(vh+sz*2);}
+
+  // Deflect if passing through center
+  const mx=x+tx*.5,my=y+ty*.5;
+  if(inSafe(mx,my,sz)){
+    if(mx<vw/2)tx=-Math.abs(tx)*.5; else tx=Math.abs(tx)*.5;
+    if(my<vh/2)ty=-Math.abs(ty)*.5; else ty=Math.abs(ty)*.5;
+  }
+
+  sp.style.width=sz+'px';sp.style.height=sz+'px';
+  sp.style.left=x+'px';sp.style.top=y+'px';
+  sp.style.setProperty('--tx',tx+'px');
+  sp.style.setProperty('--ty',ty+'px');
+  const dur=25+Math.random()*25;
+  sp.style.animationDuration=dur+'s';
+  // Different spiral shapes
+  const variant=Math.floor(Math.random()*3);
+  let path;
+  if(variant===0) path=`M12 24 C10 20,6 18,6 14 C6 10,10 6,14 6 C18 6,22 10,22 14 C22 18,18 22,14 24`;
+  else if(variant===1) path=`M8 22 C4 18,2 12,6 8 C10 4,16 2,20 6 C24 10,22 18,18 22 M18 22 C16 20,14 16,16 12 C18 8,22 10,20 14`;
+  else path=`M6 20 C2 14,4 8,10 6 C16 4,20 8,18 14 M18 14 C20 10,18 6,14 4`;
+  sp.innerHTML=`<svg viewBox="0 0 28 28"><path class="sw" d="${path}"/></svg>`;
+  VIS.appendChild(sp);
+  setTimeout(()=>fadeOutAndRemove(sp,900),(dur+2)*1e3);
+}
+function startSpirals() {
+  for(let i=0;i<scaledCount(4);i++) visTimers.push(setTimeout(spawnSpiral,300+Math.random()*3000));
+  const iv=setInterval(()=>{if(activeVisual!=='spirals'){clearInterval(iv);return;}if(VIS.children.length<scaledCount(7))spawnSpiral();},scaledInterval(4000+Math.random()*4000));
+  visTimers.push(iv);
+}
+
+// ======== CRANE WINGS ========
+function spawnCraneWing() {
+  const c=document.createElement('div');c.className='crane';
+  const sz=20+Math.random()*22;
+  const vw=window.innerWidth;
+  const fromLeft=Math.random()>.5;
+  const x=fromLeft?-sz:(vw+sz);
+  const y=32+Math.random()*52;
+  const tx=(fromLeft?1:-1)*(vw+sz*2);
+  const ty=(Math.random()-.5)*70;
+  const dur=22+Math.random()*18;
+  c.style.width=sz+'px';c.style.height=(sz*.5)+'px';
+  c.style.left=x+'px';c.style.top=y+'%';
+  c.style.setProperty('--tx',tx+'px');
+  c.style.setProperty('--ty',ty+'px');
+  c.style.animationDuration=dur+'s';
+  c.innerHTML='<svg viewBox="0 0 26 12"><path class="cw" d="M1 10 L7 4 L13 10"/><path class="cw" d="M13 10 L19 4 L25 10"/></svg>';
+  VIS.appendChild(c);
+  setTimeout(()=>fadeOutAndRemove(c,900),(dur+1)*1e3);
+}
+function startCraneWings() {
+  for(let i=0;i<scaledCount(5);i++) visTimers.push(setTimeout(spawnCraneWing,300+Math.random()*3000));
+  const iv=setInterval(()=>{if(activeVisual!=='crane'){clearInterval(iv);return;}if(VIS.children.length<scaledCount(10))spawnCraneWing();},scaledInterval(4200+Math.random()*3600));
+  visTimers.push(iv);
+}
+
+// ======== CLOUD WISPS ========
+function spawnCloudWisp() {
+  const c=document.createElement('div');c.className='cloud';
+  const sz=42+Math.random()*54;
+  const vw=window.innerWidth;
+  const fromLeft=Math.random()>.5;
+  const x=fromLeft?-sz:(vw+sz);
+  const y=38+Math.random()*50;
+  const tx=(fromLeft?1:-1)*(vw+sz*2);
+  const dur=30+Math.random()*28;
+  c.style.width=sz+'px';c.style.height=(sz*.42)+'px';
+  c.style.left=x+'px';c.style.top=y+'%';
+  c.style.setProperty('--tx',tx+'px');
+  c.style.animationDuration=dur+'s';
+  const variant=Math.floor(Math.random()*3);
+  let path;
+  if(variant===0) path='M2 12 C8 3,18 3,24 12 C30 3,40 3,46 12';
+  else if(variant===1) path='M2 11 C7 5,13 5,18 11 C24 5,31 5,36 11 C42 5,49 6,54 11';
+  else path='M2 12 C6 7,11 7,16 12 C22 8,29 8,35 12 C40 9,46 9,52 12';
+  c.innerHTML='<svg viewBox="0 0 56 16"><path class="cl" d="'+path+'"/></svg>';
+  VIS.appendChild(c);
+  setTimeout(()=>fadeOutAndRemove(c,900),(dur+1)*1e3);
+}
+function startCloudWisps() {
+  for(let i=0;i<scaledCount(4);i++) visTimers.push(setTimeout(spawnCloudWisp,400+Math.random()*3000));
+  const iv=setInterval(()=>{if(activeVisual!=='cloud'){clearInterval(iv);return;}if(VIS.children.length<scaledCount(8))spawnCloudWisp();},scaledInterval(5000+Math.random()*4000));
+  visTimers.push(iv);
+}
+
+// ======== STARS (restrained twinkle) ========
+function spawnStars() {
+  const layer=document.createElement('div');
+  layer.className='stars';
+
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const isPhone=Math.min(vw,vh)<520;
+  const target=isPhone ? (8+Math.floor(Math.random()*7)) : (10+Math.floor(Math.random()*7)); // 8-14 mobile, 10-16 larger
+  const total=Math.min(V.stars.max,target);
+  const isDark=document.body.getAttribute('data-theme')==='dark';
+
+  for(let i=0;i<total;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const r=Math.random();
+    const size=r<0.68?2:(r<0.95?3:4); // mostly 2-3px, rare 4px
+    let x,y,tries=0;
+    do{
+      x=Math.random()*(vw-size);
+      y=Math.random()*(vh-size);
+      tries++;
+    }while(tries<40 && inSafe(x,y,size+8));
+
+    const base=isDark?(0.06+Math.random()*0.10):(0.05+Math.random()*0.07);
+    const peakCap=isDark?0.22:0.16;
+    const peak=Math.min(peakCap, base+(0.04+Math.random()*0.04));
+    const dur=8+Math.random()*6;
+    const delay=Math.random()*6;
+
+    s.style.left=x.toFixed(1)+'px';
+    s.style.top=y.toFixed(1)+'px';
+    s.style.width=size+'px';
+    s.style.height=size+'px';
+    s.style.setProperty('--so',base.toFixed(3));
+    s.style.setProperty('--sp',peak.toFixed(3));
+    s.style.setProperty('--sd',dur.toFixed(2)+'s');
+    s.style.setProperty('--delay',delay.toFixed(2)+'s');
+    s.style.setProperty('--gs','1');
+    layer.appendChild(s);
+  }
+
+  VIS.appendChild(layer);
+  return layer;
+}
+function startStars() {
+  const layer=spawnStars();
+  const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(prefersReduced || !layer) return;
+  let shootingActive=false;
+
+  const glint=()=>{
+    if(activeVisual!=='stars' || !layer.isConnected) return;
+    const stars=layer.querySelectorAll('.star');
+    if(!stars.length) return;
+    const one=stars[Math.floor(Math.random()*stars.length)];
+    const base=parseFloat(getComputedStyle(one).getPropertyValue('--so'))||0.08;
+    const bump=0.06;
+    const next=Math.min(0.22,base+bump);
+    one.style.setProperty('--sp',next.toFixed(3));
+    one.style.setProperty('--gs','1.08');
+    const hold=900+Math.random()*500;
+    const tBack=setTimeout(()=>{
+      if(!one.isConnected) return;
+      one.style.setProperty('--sp',Math.min(0.22,base+(0.04+Math.random()*0.04)).toFixed(3));
+      one.style.setProperty('--gs','1');
+    },hold);
+    visTimers.push(tBack);
+  };
+
+  const first=12000+Math.random()*8000;
+  const tFirst=setTimeout(()=>{
+    glint();
+    const iv=setInterval(glint,12000+Math.random()*8000);
+    visTimers.push(iv);
+  },first);
+  visTimers.push(tFirst);
+
+  const spawnShootingStar=()=>{
+    if(activeVisual!=='stars' || !layer.isConnected || shootingActive) return;
+    shootingActive=true;
+
+    const vw=window.innerWidth, vh=window.innerHeight;
+    const shot=document.createElement('div');
+    shot.className='shooting-star';
+
+    const len=50+Math.random()*60;
+    const dur=1800+Math.random()*1200;
+    const ang=16+Math.random()*18;
+    const dx=80+Math.random()*120;
+    const dy=25+Math.random()*55;
+    let sx,sy,tries=0;
+    do{
+      sx=Math.random()*(vw*.82);
+      sy=Math.random()*(vh*.55);
+      tries++;
+    }while(tries<20 && inSafe(sx+dx*.5,sy+dy*.5,32));
+
+    shot.style.setProperty('--sw',len.toFixed(1)+'px');
+    shot.style.setProperty('--sx',sx.toFixed(1)+'px');
+    shot.style.setProperty('--sy',sy.toFixed(1)+'px');
+    shot.style.setProperty('--dx',dx.toFixed(1)+'px');
+    shot.style.setProperty('--dy',dy.toFixed(1)+'px');
+    shot.style.setProperty('--sa',ang.toFixed(1)+'deg');
+    shot.style.setProperty('--sdur',dur.toFixed(0)+'ms');
+    layer.appendChild(shot);
+
+    const tRm=setTimeout(()=>{
+      if(shot.isConnected) shot.remove();
+      shootingActive=false;
+    },dur+500);
+    visTimers.push(tRm);
+  };
+
+  const scheduleShootingStar=()=>{
+    if(activeVisual!=='stars' || !layer.isConnected) return;
+    // Increased frequency while stars mode is active.
+    const wait=V.stars.shootFreqMs+Math.random()*7000;
+    const t=setTimeout(()=>{
+      spawnShootingStar();
+      scheduleShootingStar();
+    },wait);
+    visTimers.push(t);
+  };
+  scheduleShootingStar();
+}
+
+// ======== SAND ========
+function sandColor(alpha){
+  const raw=getComputedStyle(document.body).getPropertyValue('--red').trim();
+  const m=raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if(m){
+    let hex=m[1];
+    if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+    const r=parseInt(hex.slice(0,2),16);
+    const g=parseInt(hex.slice(2,4),16);
+    const b=parseInt(hex.slice(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  const rgb=raw.match(/rgba?\(([^)]+)\)/i);
+  if(rgb){
+    const p=rgb[1].split(',').map(v=>v.trim());
+    return `rgba(${parseFloat(p[0])||154},${parseFloat(p[1])||31},${parseFloat(p[2])||34},${alpha})`;
+  }
+  return `rgba(154,31,34,${alpha})`;
+}
+
+function initSandCanvas(container){
+  const canvas=document.createElement('canvas');
+  const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  const w=Math.max(1,Math.floor(window.innerWidth));
+  const h=Math.max(1,Math.floor(window.innerHeight));
+  canvas.width=Math.floor(w*dpr);
+  canvas.height=Math.floor(h*dpr);
+  canvas.style.width=w+'px';
+  canvas.style.height=h+'px';
+  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  container.appendChild(canvas);
+  return {canvas,ctx,w,h};
+}
+
+function createSandStones(w,h,count){
+  const stones=[];
+  const base=Math.min(w,h);
+  const attempts=160;
+  for(let i=0;i<attempts && stones.length<count;i++){
+    const r=Math.max(40,Math.min(110,base*(0.08+Math.random()*0.11)));
+    const side=Math.floor(Math.random()*8);
+    let x=r+Math.random()*(w-2*r);
+    let y=r+Math.random()*(h-2*r);
+    if(side===0){x=r+Math.random()*w*.2;y=r+Math.random()*h*.2;}
+    else if(side===1){x=w-r-Math.random()*w*.2;y=r+Math.random()*h*.2;}
+    else if(side===2){x=r+Math.random()*w*.2;y=h-r-Math.random()*h*.2;}
+    else if(side===3){x=w-r-Math.random()*w*.2;y=h-r-Math.random()*h*.2;}
+    else if(side===4){x=r+Math.random()*w*.12;}
+    else if(side===5){x=w-r-Math.random()*w*.12;}
+    else if(side===6){y=r+Math.random()*h*.12;}
+    else{y=h-r-Math.random()*h*.12;}
+    if(inSafe(x,y,r+36)) continue;
+    let ok=true;
+    for(const s of stones){
+      const d=Math.hypot(x-s.x,y-s.y);
+      if(d<r+s.r+52){ok=false;break;}
+    }
+    if(ok) stones.push({x,y,r});
+  }
+  return stones;
+}
+
+function buildSandGardenPaths(w,h,stones,baseAngleDeg,spacing){
+  const rad=baseAngleDeg*Math.PI/180;
+  const step=3.8+Math.random()*2.2;
+  const maxSteps=Math.floor((w+h)/step*1.5);
+  const paths=[];
+  const phase=Math.random()*Math.PI*2;
+  const f1=2*Math.PI/(Math.max(w,h)*(0.85+Math.random()*0.35));
+  const f2=2*Math.PI/(Math.max(w,h)*(0.55+Math.random()*0.25));
+  const swirls=Array.from({length:1+Math.floor(Math.random()*2)},()=>({
+    x:Math.random()*w,
+    y:Math.random()*h,
+    r:Math.min(w,h)*(0.18+Math.random()*0.10),
+    s:0.35+Math.random()*0.25
+  }));
+
+  const field=(x,y)=>{
+    const wave=
+      0.55*Math.sin((y*f1)+phase)+
+      0.35*Math.sin((x*f2)-phase*0.7);
+    const bend=wave*(0.18+Math.random()*0.06);
+    let a=rad+bend;
+    let vx=Math.cos(a), vy=Math.sin(a);
+
+    for(const c of swirls){
+      const dx=x-c.x, dy=y-c.y;
+      const d=Math.hypot(dx,dy) || 1;
+      if(d<c.r){
+        const k=(1-d/c.r);
+        vx += (-dy/d)*(c.s*k*k*0.65);
+        vy += ( dx/d)*(c.s*k*k*0.65);
+      }
+    }
+
+    for(const s of stones){
+      const dx=x-s.x, dy=y-s.y;
+      const d=Math.hypot(dx,dy) || 1;
+      const inf=s.r*2.3;
+      if(d<inf){
+        const k=(inf-d)/inf;
+        const tx=-dy/d, ty=dx/d; // tangential wrap
+        vx += tx*(1.9*k);
+        vy += ty*(1.9*k);
+        vx += (dx/d)*(0.18*k);
+        vy += (dy/d)*(0.18*k);
+      }
+    }
+    const m=Math.hypot(vx,vy) || 1;
+    return {vx:vx/m,vy:vy/m};
+  };
+
+  const trace=(sx,sy)=>{
+    const pts=[[sx,sy]];
+    let x=sx,y=sy;
+    for(let i=0;i<maxSteps;i++){
+      const v=field(x,y);
+      x += v.vx*step;
+      y += v.vy*step;
+      if(x<-22||x>w+22||y<-22||y>h+22) break;
+      let blocked=false;
+      for(const s of stones){
+        if(Math.hypot(x-s.x,y-s.y)<s.r+4){blocked=true;break;}
+      }
+      if(blocked) break;
+      pts.push([x,y]);
+    }
+    return pts.length>10 ? pts : null;
+  };
+
+  // Start seeds from left+top edges (subtle jitter).
+  for(let y=0;y<=h;y+=spacing+(Math.random()*4-2)){
+    const p=trace(-8,y+(Math.random()*4-2));
+    if(p) paths.push(p);
+  }
+  for(let x=0;x<=w;x+=spacing+(Math.random()*4-2)){
+    const p=trace(x+(Math.random()*4-2),-8);
+    if(p) paths.push(p);
+  }
+
+  // Optional concentric arcs around one stone.
+  if(stones.length){
+    const s=stones[Math.floor(Math.random()*stones.length)];
+    const ringGap=Math.max(9,Math.min(16,spacing*0.95));
+    const ringMax=Math.min(Math.max(w,h)*0.24,s.r+160);
+    for(let rr=s.r+8; rr<ringMax; rr+=ringGap){
+      let seg=[];
+      for(let a=0;a<=Math.PI*2+0.0001;a+=0.12){
+        const x=s.x+Math.cos(a)*rr;
+        const y=s.y+Math.sin(a)*rr;
+        let ok=(x>-8&&x<w+8&&y>-8&&y<h+8);
+        if(ok){
+          for(const o of stones){
+            if(o===s) continue;
+            if(Math.hypot(x-o.x,y-o.y)<o.r+4){ok=false;break;}
+          }
+        }
+        if(ok) seg.push([x,y]);
+        else if(seg.length>8){ paths.push(seg); seg=[]; }
+        else seg=[];
+      }
+      if(seg.length>8) paths.push(seg);
+    }
+  }
+  return paths;
+}
+
+function drawSandPathsProgressive(ctx, paths, opts){
+  if(!paths.length) return;
+  // Flatten all segments into a single drawing queue
+  const queue=[];
+  for(const p of paths){
+    for(let i=0;i<p.length-1;i++){
+      queue.push({
+        a:p[i], b:p[i+1],
+        alpha:opts.alpha+(Math.random()-.5)*0.01,
+        w:Math.max(0.8,Math.min(1.2,opts.width+(Math.random()-.5)*0.08))
+      });
+    }
+  }
+  const total=queue.length;
+  if(!total) return;
+
+  if(opts.reduceMotion){
+    // Draw everything immediately
+    for(const seg of queue){
+      ctx.strokeStyle=sandColor(Math.max(0.01,seg.alpha));
+      ctx.lineWidth=seg.w;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
+    }
+    return;
+  }
+
+  // Delta-time progressive draw: map (now - t0) / DURATION to segment index
+  const DURATION=300000; // exactly 300 seconds (5 minutes)
+  const t0=performance.now();
+  let drawn=0;
+
+  const tick=()=>{
+    if(activeVisual!=='sand') return;
+    const elapsed=performance.now()-t0;
+    const progress=Math.min(1,elapsed/DURATION);
+    const target=Math.floor(progress*total);
+
+    // Draw all segments up to current progress point
+    while(drawn<target && drawn<total){
+      const seg=queue[drawn];
+      ctx.strokeStyle=sandColor(Math.max(0.01,seg.alpha));
+      ctx.lineWidth=seg.w;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(seg.a[0],seg.a[1]);ctx.lineTo(seg.b[0],seg.b[1]);ctx.stroke();
+      drawn++;
+    }
+
+    if(drawn<total){
+      const raf=requestAnimationFrame(tick);
+      // Store for cleanup
+      const wrapper={_raf:raf};
+      wrapper._stop=()=>cancelAnimationFrame(raf);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
+function startSandGarden() {
+  const sand=document.createElement('div');
+  sand.className='sand';
+  VIS.appendChild(sand);
+
+  const {ctx,w,h}=initSandCanvas(sand);
+  ctx.clearRect(0,0,w,h); // start blank
+
+  const angles=[-12,-8,-4,0,4,8,12];
+  let idx;
+  do { idx=Math.floor(Math.random()*angles.length); } while (angles.length>1 && idx===lastSandAngleIdx);
+  lastSandAngleIdx=idx;
+
+  const prefersReduced=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isDark=document.body.getAttribute('data-theme')==='dark';
+  const spacing=10+Math.random()*8;
+  const stones=createSandStones(w,h,2+Math.floor(Math.random()*3));
+  const paths=buildSandGardenPaths(w,h,stones,angles[idx],spacing);
+  drawSandPathsProgressive(ctx,paths,{
+    alpha:isDark?(0.06+Math.random()*0.04):(0.04+Math.random()*0.03),
+    width:0.8+Math.random()*0.4,
+    reduceMotion:prefersReduced
+  });
+}
+
+function startRippleSystem() {
+  const layer=document.createElement('div');
+  layer.className='ripple';
+  const canvas=document.createElement('canvas');
+  layer.appendChild(canvas);
+  VIS.appendChild(layer);
+
+  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  const rings=[];
+  let stone=null;
+  let raf=0;
+  let skipTimer=0;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  let cw=window.innerWidth;
+  let ch=window.innerHeight;
+
+  const resize=()=>{
+    cw=window.innerWidth;
+    ch=window.innerHeight;
+    canvas.width=Math.floor(cw*dpr);
+    canvas.height=Math.floor(ch*dpr);
+    canvas.style.width=cw+'px';
+    canvas.style.height=ch+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  };
+  resize();
+
+  const ringStroke=()=>{
+    const c=getComputedStyle(document.body).getPropertyValue('--red').trim();
+    return c || '#222';
+  };
+
+  const spawnRipple=(x,y)=>{
+    const count=1+Math.floor(Math.random()*2); // 1-2 rings per contact
+    for(let i=0;i<count;i++){
+      rings.push({
+        x,y,
+        startTime:performance.now()+i*80,
+        duration:2200+Math.random()*1400,
+        radiusStart:6+Math.random()*8,
+        radiusEnd:70+Math.random()*70,
+        opacityStart:0.08+Math.random()*0.06,
+        lineWidth:1.0+Math.random()*0.5
+      });
+      if(rings.length>12) rings.shift();
+    }
+  };
+
+  const triggerSkip=()=>{
+    const leftToRight=Math.random()>.5;
+    const contacts=3+Math.floor(Math.random()*3); // 3-5
+    const baseY=ch*(0.30+Math.random()*0.35);
+    const arcHeight=(-1+Math.random()*2)*(ch*(0.03+Math.random()*0.05));
+    const margin=cw*(0.08+Math.random()*0.10);
+    const startX=leftToRight?margin:(cw-margin);
+    const endX=leftToRight?(cw-margin):margin;
+    const stepMs=420+Math.random()*400; // 420-820ms
+    const stoneDur=Math.max(1400,stepMs*(contacts-1)+stepMs*0.9);
+    const evtStone={
+      active:true,
+      t0:performance.now(),
+      duration:stoneDur,
+      dir:leftToRight?1:-1,
+      startX,endX,baseY,
+      arcAmp:arcHeight,
+      r:2.0+Math.random()*1.0
+    };
+    stone=evtStone;
+    const lerp=(a,b,u)=>a+(b-a)*u;
+    for(let i=0;i<contacts;i++){
+      const u=contacts===1?0:i/(contacts-1);
+      const x=lerp(startX,endX,u);
+      const y=baseY+Math.sin(u*Math.PI)*arcHeight;
+      const t=Math.round(u*stoneDur);
+      visTimers.push(setTimeout(()=>{
+        if(activeVisual!=='ripple' || !layer.isConnected) return;
+        spawnRipple(x,y);
+      },t));
+    }
+  };
+
+  const scheduleNextSkip=(waitMs)=>{
+    clearTimeout(skipTimer);
+    skipTimer=setTimeout(()=>{
+      if(activeVisual!=='ripple' || !layer.isConnected) return;
+      triggerSkip();
+      scheduleNextSkip(18000+Math.random()*16000); // 18-34s
+    },waitMs);
+  };
+
+  const draw=(now)=>{
+    if(activeVisual!=='ripple' || !layer.isConnected) return;
+    ctx.clearRect(0,0,cw,ch);
+    ctx.strokeStyle=ringStroke();
+
+    for(let i=rings.length-1;i>=0;i--){
+      const r=rings[i];
+      const t=(now-r.startTime)/r.duration;
+      if(t>=1){ rings.splice(i,1); continue; }
+      if(t<0) continue;
+      const radius=r.radiusStart+(r.radiusEnd-r.radiusStart)*(1-Math.pow(1-t,2));
+      const opacity=r.opacityStart*(1-Math.pow(t,1.4));
+      if(opacity<=0) continue;
+      ctx.globalAlpha=opacity;
+      ctx.lineWidth=r.lineWidth;
+      ctx.beginPath();
+      ctx.arc(r.x,r.y,radius,0,Math.PI*2);
+      ctx.stroke();
+    }
+
+    if(stone && stone.active){
+      const u=Math.max(0,Math.min(1,(now-stone.t0)/stone.duration));
+      if(u>=1){
+        stone.active=false;
+      } else {
+        const x=stone.startX+(stone.endX-stone.startX)*u;
+        const y=stone.baseY+Math.sin(u*Math.PI)*stone.arcAmp;
+        let sa=0.16;
+        if(u<0.10) sa*=u/0.10;
+        else if(u>0.88) sa*=(1-u)/0.12;
+        if(sa>0){
+          const rr=stone.r*(0.9+0.15*Math.min(dpr,2));
+          ctx.globalAlpha=sa;
+          ctx.beginPath();
+          ctx.arc(x,y,rr,0,Math.PI*2);
+          ctx.fill();
+          ctx.globalAlpha=sa*0.35;
+          ctx.beginPath();
+          ctx.arc(x+1,y+1,Math.max(1.2,rr*0.52),0,Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+
+    ctx.globalAlpha=1;
+    raf=requestAnimationFrame(draw);
+  };
+
+  layer._stop=()=>{
+    if(raf) cancelAnimationFrame(raf);
+    if(skipTimer) clearTimeout(skipTimer);
+    window.removeEventListener('resize',resize);
+  };
+
+  window.addEventListener('resize',resize);
+  raf=requestAnimationFrame(draw);
+  scheduleNextSkip(18000+Math.random()*16000);
+}
+
+function pickVisual() {
+  clearVisuals();
+  const types=['koi','ink','blossom','feather','brush','stars','birds','serpent','bee','firefly','sand','ripple'];
+  const choices=activeVisual ? types.filter(t=>t!==activeVisual) : types.slice();
+  activeVisual=choices[Math.floor(Math.random()*choices.length)];
+  if(activeVisual==='koi') { spawnKoi(); startKoi(); }
+  else if(activeVisual==='ink') { spawnInk(); startInk(); }
+  else if(activeVisual==='blossom') { spawnBlossom(); startBlossom(); }
+  else if(activeVisual==='feather') { spawnFeather(); startFeathers(); }
+  else if(activeVisual==='birds') { spawnBird(); startBirds(); }
+  else if(activeVisual==='stars') { startStars(); }
+  else if(activeVisual==='sand') { startSandGarden(); }
+  else if(activeVisual==='ripple') { startRippleSystem(); }
+  else if(activeVisual==='serpent') { spawnSerpent(); startSerpent(); }
+  else if(activeVisual==='bee') { startBees(); }
+  else if(activeVisual==='firefly') { startFireflies(); }
+  else { spawnBrush(); startBrush(); }
+}
+
+// ======== SERPENT PATH ========
+function spawnSerpent() {
+  const s=document.createElement('div');
+  s.className='serpent';
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const len=80+Math.random()*40; // body length in px
+  const segs=12; // spine segments
+  const segLen=len/segs;
+  const w=len+20, h=len*.4+20;
+
+  s.style.width=w+'px';s.style.height=h+'px';
+  s.style.left='0px';s.style.top='0px';
+
+  const fromLeft=Math.random()>.5;
+  const startX=fromLeft?-len-30:vw+30;
+  const endX=fromLeft?vw+len+30:-len-30;
+  const startY=vh*(0.15+Math.random()*0.65);
+  const endY=Math.max(vh*0.1,Math.min(vh*0.9,startY+(-80+Math.random()*160)));
+  const cx1=startX+(fromLeft?1:-1)*(vw*(0.25+Math.random()*0.15));
+  const cx2=startX+(fromLeft?1:-1)*(vw*(0.55+Math.random()*0.2));
+  const cy1=Math.max(vh*0.05,Math.min(vh*0.95,startY+(-100+Math.random()*200)));
+  const cy2=Math.max(vh*0.05,Math.min(vh*0.95,endY+(-100+Math.random()*200)));
+
+  const dur=60000+Math.random()*30000; // 60-90s
+  const phase=Math.random()*Math.PI*2;
+  const waveAmp=6+Math.random()*8;
+  const waveFreq=3+Math.random()*2;
+
+  function bezier(t,p0,p1,p2,p3){const it=1-t;return it*it*it*p0+3*it*it*t*p1+3*it*t*t*p2+t*t*t*p3;}
+  function bezierD(t,p0,p1,p2,p3){const it=1-t;return 3*it*it*(p1-p0)+6*it*t*(p2-p1)+3*t*t*(p3-p2);}
+
+  // Build SVG with multiple spine segments
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  svg.style.overflow='visible';
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.classList.add('sv');
+  path.setAttribute('stroke-width','1.8');
+  svg.appendChild(path);
+  // Tiny head dot
+  const head=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  head.classList.add('sv');
+  head.setAttribute('r','2');
+  head.setAttribute('stroke-width','0');
+  head.style.fill='var(--red)';
+  head.style.opacity='.1';
+  svg.appendChild(head);
+  s.appendChild(svg);
+  VIS.appendChild(s);
+
+  const t0=performance.now();
+  let lastFrame=0;
+  const step=(now)=>{
+    if(s.dataset.fading==='1') return;
+    if(document.hidden){ s._raf=requestAnimationFrame(step); return; }
+    if(now-lastFrame < RAF_MIN_STEP){ s._raf=requestAnimationFrame(step); return; }
+    lastFrame=now;
+    const p=Math.min(1,(now-t0)/dur);
+    if(p>=1){fadeOutAndRemove(s,900);return;}
+
+    const hx=bezier(p,startX,cx1,cx2,endX);
+    let hy=bezier(p,startY,cy1,cy2,endY);
+    hy+=Math.sin(p*waveFreq*Math.PI*2+phase)*waveAmp;
+
+    // Build spine points trailing behind head
+    const pts=[];
+    for(let i=0;i<=segs;i++){
+      const tp=Math.max(0,p-i*0.008);
+      const px=bezier(tp,startX,cx1,cx2,endX);
+      let py=bezier(tp,startY,cy1,cy2,endY);
+      // Each segment has its own sine offset for undulation
+      py+=Math.sin(tp*waveFreq*Math.PI*2+phase+i*0.5)*waveAmp*(1-i/(segs*2));
+      pts.push([px,py]);
+    }
+
+    // Build smooth path through points
+    let d=`M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for(let i=1;i<pts.length;i++){
+      d+=` L${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)}`;
+    }
+    path.setAttribute('d',d);
+    head.setAttribute('cx',pts[0][0].toFixed(1));
+    head.setAttribute('cy',pts[0][1].toFixed(1));
+
+    // Use full viewport as viewBox since we're positioning in absolute coords
+    svg.setAttribute('viewBox',`0 0 ${vw} ${vh}`);
+    s.style.width=vw+'px';s.style.height=vh+'px';
+    s.style.left='0px';s.style.top='0px';
+
+    let op=V.opMax;
+    if(p<.08) op=V.opMax*(p/.08);
+    else if(p>.92) op=V.opMax*((1-p)/.08);
+    s.style.opacity=Math.max(0,op).toFixed(3);
+    s.style.transform='translate(0,0)';
+
+    s._raf=requestAnimationFrame(step);
+  };
+  s._raf=requestAnimationFrame(step);
+  s._stop=()=>{if(s._raf) cancelAnimationFrame(s._raf);};
+}
+function startSerpent() {
+  // 1-2 instances, staggered
+  const count=V.serpent.max;
+  for(let i=1;i<count;i++){
+    visTimers.push(setTimeout(spawnSerpent,8000+Math.random()*12000));
+  }
+  const iv=setInterval(()=>{
+    if(activeVisual!=='serpent'){clearInterval(iv);return;}
+    const existing=VIS.querySelectorAll('.serpent').length;
+    if(existing<V.serpent.max) spawnSerpent();
+  },30000+Math.random()*20000);
+  visTimers.push(iv);
+}
+
+// ======== GOLDEN BEE HOVER ========
+function spawnBee() {
+  const b=document.createElement('div');
+  b.className='bee';
+  const beeId='bee-'+(++beeTrailSeq);
+  b.dataset.id=beeId;
+  const sz=15+Math.random()*12; // larger for better visibility on mobile
+  const vw=window.innerWidth, vh=window.innerHeight;
+
+  // Start from random edge
+  const fromLeft=Math.random()>.5;
+  const startX=fromLeft?-sz-10:vw+10;
+  const startY=vh*(0.1+Math.random()*0.75);
+
+  // Lazy flight target — wander across but not necessarily all the way
+  const endX=fromLeft?(vw*(0.3+Math.random()*0.7)):(vw*(Math.random()*0.7));
+  const endY=Math.max(vh*0.08,Math.min(vh*0.88,startY+(-60+Math.random()*120)));
+
+  const dur=25000+Math.random()*20000; // 25-45s
+  const phase=Math.random()*Math.PI*2;
+  const jitterAmp=1.5+Math.random()*2; // micro-jitter for hovering
+  const driftAmp=8+Math.random()*12; // lazy wander amplitude
+
+  b.style.width=sz+'px';b.style.height=sz+'px';
+  b.style.left='0px';b.style.top='0px';
+
+  // Impressionist SVG — just soft overlapping circles, no anatomy
+  b.innerHTML=`<svg viewBox="0 0 16 12"><ellipse class="bz" cx="8" cy="6" rx="6" ry="4.5"/><ellipse class="bzo" cx="8" cy="6" rx="5" ry="3.5"/><circle class="bz" cx="5" cy="5" r="2.5" opacity=".06"/><circle class="bz" cx="11" cy="5" r="2.5" opacity=".06"/></svg>`;
+  ensureBeeTrailCanvas();
+  VIS.appendChild(b);
+
+  const t0=performance.now();
+  let lastFrame=0;
+  let lastDotX=startX, lastDotY=startY, lastDotT=t0;
+  const step=(now)=>{
+    if(b.dataset.fading==='1') return;
+    if(document.hidden){ b._raf=requestAnimationFrame(step); return; }
+    if(now-lastFrame < RAF_MIN_STEP){ b._raf=requestAnimationFrame(step); return; }
+    lastFrame=now;
+    const p=Math.min(1,(now-t0)/dur);
+    if(p>=1){fadeOutAndRemove(b,900);return;}
+
+    // Lazy flight — smooth interpolation with sine wander
+    const t=p*p*(3-2*p); // smoothstep easing
+    let x=startX+(endX-startX)*t;
+    let y=startY+(endY-startY)*t;
+
+    // Add lazy drift
+    x+=Math.sin(p*Math.PI*3+phase)*driftAmp;
+    y+=Math.cos(p*Math.PI*2.5+phase*1.3)*driftAmp*0.7;
+
+    // Add micro-jitter (high frequency, low amplitude — hovering buzz)
+    const jt=now*0.008;
+    x+=Math.sin(jt+phase)*jitterAmp;
+    y+=Math.cos(jt*1.3+phase*0.7)*jitterAmp;
+
+    // Safe zone avoidance
+    if(inSafe(x,y,sz)){
+      // Nudge away from center
+      const cx=vw/2, cy=vh/2;
+      x+=(x<cx?-15:15);
+      y+=(y<cy?-15:15);
+    }
+
+    let op=V.opMax;
+    if(p<.1) op=V.opMax*(p/.1);
+    else if(p>.85) op=V.opMax*((1-p)/.15);
+    b.style.opacity=Math.max(0,op).toFixed(3);
+    b.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
+    const cx=x+sz*.5, cy=y+sz*.5;
+    const dist=Math.hypot(cx-lastDotX,cy-lastDotY);
+    if(dist>12 || (now-lastDotT)>90){
+      addBeeTrailPoint(beeId,cx,cy,now);
+      lastDotX=cx;lastDotY=cy;lastDotT=now;
+    }
+
+    b._raf=requestAnimationFrame(step);
+  };
+  b._raf=requestAnimationFrame(step);
+  b._stop=()=>{if(b._raf) cancelAnimationFrame(b._raf);};
+}
+function startBees() {
+  for(let i=0;i<V.bee.initial;i++){
+    visTimers.push(setTimeout(spawnBee,jitter(300+Math.random()*3500)));
+  }
+  const iv=setInterval(()=>{
+    if(activeVisual!=='bee'){clearInterval(iv);return;}
+    if(VIS.querySelectorAll('.bee').length<V.bee.max) spawnBee();
+  },jitter(15000+Math.random()*15000));
+  visTimers.push(iv);
+}
+
+// ======== FIREFLY DRIFT ========
+function spawnFirefly() {
+  const f=document.createElement('div');
+  f.className='firefly';
+  const sz=2+Math.random()*2.5; // tiny 2-4.5px dots
+  const vw=window.innerWidth, vh=window.innerHeight;
+
+  // Random position, avoiding safe zone
+  let x,y,tries=0;
+  do{
+    x=Math.random()*vw;
+    y=Math.random()*vh;
+    tries++;
+  }while(tries<30 && inSafe(x,y,sz+20));
+
+  const baseOp=0.05+Math.random()*0.04;
+  const peakOp=Math.min(0.14,baseOp+0.03+Math.random()*0.04);
+  const dur=20+Math.random()*25; // 20-45s glow cycle
+  const driftX=(-30+Math.random()*60);
+  const driftY=(-20+Math.random()*40);
+  const phase=Math.random()*Math.PI*2;
+
+  f.style.width=sz+'px';f.style.height=sz+'px';
+  f.style.left=x+'px';f.style.top=y+'px';
+  f.style.setProperty('--fo',baseOp.toFixed(3));
+  f.style.setProperty('--fp',peakOp.toFixed(3));
+  f.style.animation=`firefly-glow ${dur}s ease-in-out infinite`;
+  f.style.animationDelay=(Math.random()*8)+'s';
+
+  VIS.appendChild(f);
+
+  // Gentle drift over time
+  const t0=performance.now();
+  const totalDrift=dur*1000*2; // drift for 2 full glow cycles then respawn
+  let lastFrame=0;
+  const step=(now)=>{
+    if(f.dataset.fading==='1') return;
+    if(document.hidden){ f._raf=requestAnimationFrame(step); return; }
+    if(now-lastFrame < RAF_MIN_STEP){ f._raf=requestAnimationFrame(step); return; }
+    lastFrame=now;
+    const p=Math.min(1,(now-t0)/totalDrift);
+    if(p>=1){
+      fadeOutAndRemove(f,900);
+      // Respawn if still active
+      if(activeVisual==='firefly') visTimers.push(setTimeout(spawnFirefly,2000+Math.random()*8000));
+      return;
+    }
+    const dx=driftX*p+Math.sin(p*Math.PI*4+phase)*3;
+    const dy=driftY*p+Math.cos(p*Math.PI*3+phase)*2;
+    f.style.transform=`translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px)`;
+    f._raf=requestAnimationFrame(step);
+  };
+  f._raf=requestAnimationFrame(step);
+  f._stop=()=>{if(f._raf) cancelAnimationFrame(f._raf);};
+}
+function startFireflies() {
+  for(let i=0;i<V.firefly.initial;i++){
+    visTimers.push(setTimeout(spawnFirefly,jitter(500+Math.random()*5000)));
+  }
+  const iv=setInterval(()=>{
+    if(activeVisual!=='firefly'){clearInterval(iv);return;}
+    if(VIS.querySelectorAll('.firefly').length<V.firefly.max) spawnFirefly();
+  },jitter(15000+Math.random()*15000));
+  visTimers.push(iv);
+}
+function spawnKoi() {
+  // Hard guard: never allow concurrent koi, prevents visual crossover entirely.
+  if (VIS.querySelectorAll('.koi').length > 0) return;
+  const k=document.createElement('div');
+  k.className='koi';
+  const bodyLen=140+Math.random()*100; // on-screen koi width, mobile-readable
+  const vw=window.innerWidth;
+  const vh=window.innerHeight;
+  const fromLeft=Math.random()>.5;
+
+  const startX=fromLeft?-bodyLen-30:vw+30;
+  const endX=fromLeft?vw+bodyLen+30:-bodyLen-30;
+  const startY=vh*(0.18+Math.random()*0.58);
+  const endY=Math.max(vh*0.12,Math.min(vh*0.9,startY+(-60+Math.random()*120)));
+
+  const cx1=startX+(fromLeft?1:-1)*(vw*(0.2+Math.random()*0.2));
+  const cx2=startX+(fromLeft?1:-1)*(vw*(0.55+Math.random()*0.2));
+  const cy1=Math.max(vh*0.08,Math.min(vh*0.92,startY+(-120+Math.random()*240)));
+  const cy2=Math.max(vh*0.08,Math.min(vh*0.92,endY+(-120+Math.random()*240)));
+
+  const dur=(28000+Math.random()*18000)*0.9;
+  const phase=Math.random()*Math.PI*2;
+  const MAX_TURN=0.035;
+  const SMOOTH=0.18;
+  const tailRate=0.85;
+
+  const w=bodyLen;
+  const h=bodyLen*0.5;
+  k.style.width=w+'px';
+  k.style.height=h+'px';
+  k.style.left='0px';
+  k.style.top='0px';
+  k.style.transformOrigin='50% 50%';
+  k.innerHTML='<svg class="koi-svg" viewBox="0 0 160 80" aria-hidden="true"><path class="kv koi-body" d="M20 40 C35 18, 78 14, 108 28 C128 38, 132 52, 110 58 C78 70, 36 62, 20 40 Z"/><path class="kv koi-tail" d="M110 40 L148 28 M110 40 L148 52"/><path class="kv koi-fin" d="M78 30 Q86 20 96 30"/><circle class="koi-eye" cx="40" cy="38" r="1.6"/></svg>';
+  const tailEl=k.querySelector('.koi-tail');
+  VIS.appendChild(k);
+
+  function bezier(t,p0,p1,p2,p3){const it=1-t;return it*it*it*p0+3*it*it*t*p1+3*it*t*t*p2+t*t*t*p3;}
+  function bezierD(t,p0,p1,p2,p3){const it=1-t;return 3*it*it*(p1-p0)+6*it*t*(p2-p1)+3*t*t*(p3-p2);}
+
+  const t0=performance.now();
+  let lastFrame=0;
+  const step=(now)=>{
+    if(k.dataset.fading==='1') return;
+    if(document.hidden){ k._raf=requestAnimationFrame(step); return; }
+    if(now-lastFrame < RAF_MIN_STEP){ k._raf=requestAnimationFrame(step); return; }
+    lastFrame=now;
+    const p=(now-t0)/dur;
+    if(p>=1){fadeOutAndRemove(k,900);return;}
+
+    const x=bezier(p,startX,cx1,cx2,endX);
+    const y=bezier(p,startY,cy1,cy2,endY);
+    const prevPos=k._prevPos || [x,y];
+    let hdx=x-prevPos[0];
+    let hdy=y-prevPos[1];
+    const MAX_STEP=bodyLen*0.08;
+    hdx=Math.max(-MAX_STEP,Math.min(MAX_STEP,hdx));
+    hdy=Math.max(-MAX_STEP,Math.min(MAX_STEP,hdy));
+    if(Math.abs(hdx)+Math.abs(hdy) < 0.0001){
+      hdx=bezierD(p,startX,cx1,cx2,endX);
+      hdy=bezierD(p,startY,cy1,cy2,endY);
+      hdx=Math.max(-MAX_STEP,Math.min(MAX_STEP,hdx));
+      hdy=Math.max(-MAX_STEP,Math.min(MAX_STEP,hdy));
+    }
+    const heading=Math.atan2(hdy,hdx);
+    const prevHeading=(k._heading ?? heading);
+    let dHead=heading-prevHeading;
+    dHead=((dHead+Math.PI)%(2*Math.PI))-Math.PI;
+    dHead=Math.max(-MAX_TURN,Math.min(MAX_TURN,dHead));
+    const newHeading=prevHeading + dHead*(1-Math.pow(1-SMOOTH,1));
+    k._heading=newHeading;
+    k._prevPos=[x,y];
+    const tailSway=Math.sin((now-t0)*0.003*tailRate+phase)*2.6;
+    if(tailEl){
+      tailEl.setAttribute('d',`M110 40 L148 ${(28+tailSway).toFixed(1)} M110 40 L148 ${(52-tailSway).toFixed(1)}`);
+    }
+    k.style.transform=`translate(${(x-w*0.5).toFixed(1)}px,${(y-h*0.5).toFixed(1)}px) rotate(${(newHeading*180/Math.PI).toFixed(2)}deg)`;
+
+    let op=V.opMax;
+    if(p<.1) op=V.opMax*(p/.1);
+    else if(p>.9) op=V.opMax*((1-p)/.1);
+    k.style.opacity=Math.max(0,op).toFixed(3);
+
+    k._raf=requestAnimationFrame(step);
+  };
+
+  k._raf=requestAnimationFrame(step);
+  k._stop=()=>{ if(k._raf) cancelAnimationFrame(k._raf); };
+}
+function startKoi() {
+  for(let i=0;i<V.koi.initial;i++) visTimers.push(setTimeout(spawnKoi,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{
+    if(activeVisual!=='koi'){clearInterval(iv);return;}
+    if(VIS.querySelectorAll('.koi').length<V.koi.max) spawnKoi();
+  },jitter(5000+Math.random()*3000));
+  visTimers.push(iv);
+}
+
+// ======== INK DROPLET (50% larger) ========
+function spawnInk() {
+  const d=document.createElement('div');d.className='ink';
+  const sz=90+Math.random()*48;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const x=Math.random()*(vw-sz);
+  const y=Math.random()*(vh-sz);
+  const tx=(-8+Math.random()*16);
+  const ty=(-8+Math.random()*16);
+
+  const dur=(30+Math.random()*25)*0.5;
+  d.style.width=sz+'px';d.style.height=sz+'px';
+  d.style.left=x+'px';d.style.top=y+'px';
+  d.style.setProperty('--tx',tx+'px');
+  d.style.setProperty('--ty',ty+'px');
+  d.style.animationDuration=dur+'s';
+  d.innerHTML='<svg viewBox="0 0 60 60"><circle class="iv" stroke-width="1.2" cx="30" cy="30" r="0" style="animation:ink-drop 6.25s ease-in-out infinite"/><circle class="iv" stroke-width=".72" cx="30" cy="30" r="0" style="animation:ripple1 6.25s ease-in-out infinite;animation-delay:1s"/><circle class="iv" stroke-width=".5" cx="30" cy="30" r="0" style="animation:ripple2 6.25s ease-in-out infinite;animation-delay:2s"/></svg>';
+  VIS.appendChild(d);
+  setTimeout(()=>fadeOutAndRemove(d,900),(dur+1)*1e3);
+}
+function startInk() {
+  for(let i=0;i<V.ink.initial;i++) visTimers.push(setTimeout(spawnInk,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='ink'){clearInterval(iv);return;}if(VIS.querySelectorAll('.ink').length<V.ink.max)spawnInk();},jitter(20000+Math.random()*10000));
+  visTimers.push(iv);
+}
+
+// ======== CHERRY BLOSSOM ========
+function spawnBlossom() {
+  const b=document.createElement('div');b.className='blossom';
+  const tier=Math.random();
+  let sz;
+  if(tier<0.5) sz=10+Math.random()*8;      // small
+  else if(tier<0.85) sz=18+Math.random()*10; // medium
+  else sz=30+Math.random()*16;             // large accent blossoms
+  sz=Math.min(sz,32.2); // 30% lower max vs previous 46px cap
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const x=Math.random()*(vw-sz);
+  const y=-sz-(6+Math.random()*34);
+  const tx=(-28+Math.random()*56);
+  const ty=vh*(.90+Math.random()*.28);
+  const dur=(18+Math.random()*16)*1.25;
+  b.style.width=sz+'px';b.style.height=sz+'px';
+  b.style.left=x+'px';b.style.top=y+'px';
+  b.style.setProperty('--tx',tx+'px');
+  b.style.setProperty('--ty',ty+'px');
+  b.style.animationDuration=dur+'s';
+  b.innerHTML='<svg viewBox="0 0 22 22" style="animation:blossom-fall 6.5s ease-in-out infinite"><path class="bv" stroke-width=".9" d="M11 1 C12 4, 14 5, 11 8 M11 8 C15 7, 17 5, 20 7 M11 8 C14 10, 15 13, 13 15 M11 8 C8 10, 7 13, 9 15 M11 8 C7 7, 5 5, 2 7 M11 8 C10 4, 8 5, 11 1"/><circle cx="11" cy="8" r="1.3" fill="currentColor" fill-opacity=".2" stroke="none"/></svg>';
+  VIS.appendChild(b);
+  setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
+}
+function startBlossom() {
+  for(let i=0;i<V.blossom.initial;i++) visTimers.push(setTimeout(spawnBlossom,jitter(200+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='blossom'){clearInterval(iv);return;}if(VIS.querySelectorAll('.blossom').length<V.blossom.max)spawnBlossom();},jitter(4000+Math.random()*3000));
+  visTimers.push(iv);
+}
+
+// ======== FEATHER ========
+function spawnFeather() {
+  const f=document.createElement('div');f.className='feather';
+  const sz=16+Math.random()*14;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const x=Math.random()*(vw-sz);
+  const y=-sz-(8+Math.random()*24);
+  const dur=14+Math.random()*8; // 14-22s
+  const sx=(18+Math.random()*26).toFixed(2)+'px'; // 18-44px sway amplitude
+  const p=(Math.random()*Math.PI*2).toFixed(3); // phase
+  const rot=(6+Math.random()*10).toFixed(2)+'deg'; // 6-16deg
+
+  f.style.width=sz+'px';f.style.height=(sz*1.5)+'px';
+  f.style.left=x+'px';f.style.top=y+'px';
+  f.style.setProperty('--x0','0px');
+  f.style.setProperty('--sx',sx);
+  f.style.setProperty('--p',p);
+  f.style.setProperty('--rot',rot);
+  f.style.setProperty('--t',dur.toFixed(2)+'s');
+  f.style.setProperty('--fo','.12');
+  f.innerHTML='<svg viewBox="0 0 20 30"><path class="fv" stroke-width="1.05" d="M10 2 C8 9,8 17,10 28"/><path class="fv" stroke-width=".85" d="M10 7 L6.2 5.8"/><path class="fv" stroke-width=".85" d="M10 10.4 L6 9.6"/><path class="fv" stroke-width=".85" d="M10 13.8 L5.9 13.5"/><path class="fv" stroke-width=".85" d="M10 17.2 L6.1 17.5"/><path class="fv" stroke-width=".85" d="M10 20.8 L6.6 21.7"/><path class="fv" stroke-width=".85" d="M10 7.8 L13.6 6.7"/><path class="fv" stroke-width=".85" d="M10 11.2 L13.8 10.6"/><path class="fv" stroke-width=".85" d="M10 14.8 L14 15.0"/><path class="fv" stroke-width=".85" d="M10 18.4 L13.7 19.2"/><path class="fv" stroke-width=".85" d="M10 22 L13.2 23.2"/></svg>';
+  const featherSVG=f.querySelector('svg');
+  if(featherSVG) featherSVG.style.animationDelay=(-Math.random()*4).toFixed(2)+'s';
+  VIS.appendChild(f);
+  setTimeout(()=>fadeOutAndRemove(f,900),(dur+1)*1e3);
+}
+function startFeathers() {
+  for(let i=0;i<V.feather.initial;i++) visTimers.push(setTimeout(spawnFeather,jitter(300+Math.random()*3000)));
+  const iv=setInterval(()=>{if(activeVisual!=='feather'){clearInterval(iv);return;}if(VIS.querySelectorAll('.feather').length<V.feather.max)spawnFeather();},jitter(5500+Math.random()*4500));
+  visTimers.push(iv);
+}
+
+// ======== BRUSHSTROKE ========
+function spawnBrush() {
+  const b=document.createElement('div');b.className='brush';
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const w=80+Math.random()*120;
+  const h=22+Math.random()*16;
+  const fromLeft=Math.random()>.5;
+  const x=fromLeft?(-w-16):(vw+16);
+  const y=10+Math.random()*(vh*0.75);
+  const tx=(fromLeft?1:-1)*(40+Math.random()*(vw*0.55));
+  const ty=(-70+Math.random()*140);
+  const dur=24+Math.random()*20;
+  const mx1=tx*0.25+(-28+Math.random()*56);
+  const mx2=tx*0.52+(-36+Math.random()*72);
+  const mx3=tx*0.78+(-24+Math.random()*48);
+  const my1=ty*0.25+(-28+Math.random()*56);
+  const my2=ty*0.52+(-34+Math.random()*68);
+  const my3=ty*0.78+(-24+Math.random()*48);
+  const r1=(-18+Math.random()*36).toFixed(1)+'deg';
+  const r2=(-24+Math.random()*48).toFixed(1)+'deg';
+  const r3=(-18+Math.random()*36).toFixed(1)+'deg';
+  const r4=(-10+Math.random()*20).toFixed(1)+'deg';
+  b.style.width=w+'px';b.style.height=h+'px';
+  b.style.left=x+'px';b.style.top=y+'px';
+  b.style.setProperty('--tx',tx+'px');
+  b.style.setProperty('--ty',ty+'px');
+  b.style.setProperty('--mx1',mx1+'px');
+  b.style.setProperty('--my1',my1+'px');
+  b.style.setProperty('--mx2',mx2+'px');
+  b.style.setProperty('--my2',my2+'px');
+  b.style.setProperty('--mx3',mx3+'px');
+  b.style.setProperty('--my3',my3+'px');
+  b.style.setProperty('--r1',r1);
+  b.style.setProperty('--r2',r2);
+  b.style.setProperty('--r3',r3);
+  b.style.setProperty('--r4',r4);
+  b.style.animationDuration=dur+'s';
+  const lines=2+Math.floor(Math.random()*3); // 2-4 parallel wave lines
+  const sw=1.7;
+  const color='var(--red)';
+  const sweepDur=(12+Math.random()*10).toFixed(1);
+  const sweepDelay=(Math.random()*3).toFixed(1);
+  b.innerHTML='<svg viewBox="0 0 100 24">'+Array.from({length:lines}).map((_,i)=>{const offset=6+i*6+(Math.random()*2-1)*2;const amp=4+Math.random()*3;const path=`M2 ${offset.toFixed(2)} C 18 ${(offset-amp).toFixed(2)}, 34 ${(offset+amp).toFixed(2)}, 50 ${offset.toFixed(2)} C 66 ${(offset-amp).toFixed(2)}, 82 ${(offset+amp).toFixed(2)}, 98 ${offset.toFixed(2)}`;const opacity=Math.max(0.06,0.12-i*0.02);return '<path class="br" d="'+path+'" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="120" opacity="'+opacity.toFixed(2)+'" style="animation:brush-sweep '+sweepDur+'s ease-in-out infinite;animation-delay:'+sweepDelay+'s;"/>';}).join('')+'</svg>';
+  VIS.appendChild(b);
+  setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
+}
+function startBrush() {
+  for(let i=0;i<V.brush.initial;i++) visTimers.push(setTimeout(spawnBrush,jitter(300+Math.random()*2500)));
+  const iv=setInterval(()=>{if(activeVisual!=='brush'){clearInterval(iv);return;}if(VIS.querySelectorAll('.brush').length<V.brush.max)spawnBrush();},jitter(5000+Math.random()*3000));
+  visTimers.push(iv);
+}
+
+// ============ FORTUNES ============
+const F={
+  en:["A door you forgot you opened is about to let something extraordinary walk through.","The courage you lend to others has been quietly building a fortress around your own heart.","Something you planted in a moment of doubt is about to bloom beyond your wildest plans.","The universe is rearranging itself to make room for the version of you that\u2019s arriving.","A conversation you\u2019ve been avoiding holds the key you\u2019ve been searching for.","Your next chapter has a plot twist that will make you grateful for every detour.","The thing you almost gave up on is closer to fruition than you realize.","Someone is about to return a kindness you forgot you extended.","What feels like an ending is actually the universe clearing your runway.","The risk you\u2019re considering is smaller than the regret of not taking it.","A stranger will soon remind you of a truth you\u2019ve always known.","Your patience is not being tested \u2014 it is being rewarded in slow motion.","The path that scares you and the path that fulfills you are the same road.","Something you created without thinking will become something someone treasures forever.","The answer you seek is hiding in the question you haven\u2019t asked yet.","You are being prepared for something you don\u2019t yet have the vocabulary to describe.","The person you\u2019ll be in six months would thank you for what you\u2019re doing right now.","A small act of trust will unlock a door that effort alone could never open.","Your instincts have been right more often than your doubts have let you believe.","What you\u2019re building in the quiet hours will speak loudly when the time comes.","The love you give freely is circling back to you with interest.","A forgotten dream is packing its bags and heading back to your doorstep.","The world doesn\u2019t need you to be perfect \u2014 it needs you to be present.","Something beautiful is trying to find you. Stop moving so fast and let it.","You carry a light that certain people have been searching for without knowing it.","Your hesitation is not weakness \u2014 it\u2019s wisdom gathering its evidence.","Your curiosity is your compass \u2014 follow it without needing to justify the direction.","Something you consider ordinary about yourself is remarkable to those who know you.","The thing that makes you different is exactly what makes you necessary.","Your warmth melts barriers that force could never break.","Everything you need for your next step, you already have. Look again.","The fortune you seek is not ahead of you \u2014 it is already within you.","You\u2019re not behind. You\u2019re on a path that doesn\u2019t exist yet because you\u2019re creating it.","The quiet voice inside you has a better track record than the loud one.","You are someone\u2019s proof that good people still exist.","The recipe for your happiness has fewer ingredients than you think.","You\u2019re already someone\u2019s favorite person. Sit with that for a moment.","A boundary you draw with love will be respected more than one drawn with anger.","The fortune you seek is not ahead of you \u2014 it\u2019s already sitting in your hands.","The luckiest thing about you isn\u2019t what happened to you \u2014 it\u2019s how you responded.","Your shadow only appears when there is light behind you. Keep walking.","The seed does not see the flower it becomes. Neither do you. Not yet.","Somewhere a table is being set for you. You were not told the address on purpose.","The old map was wrong. That is why you had to leave the road.","A word you said in passing is still holding someone together right now.","You have been the right person in the right place more often than you know.","The things you carry for others have made your hands strong enough for what comes next.","What you lost taught you where to look. What you kept taught you what matters.","Silence is not emptiness. It is where your next idea is gathering courage.","The window you keep checking will open from the other side.","Even the mountain was once under the sea. Patience reshapes everything.","Something you forgot to worry about has already worked itself out.","The best things in your life arrived when you stopped rehearsing the invitation.","You have more allies than your anxiety wants you to count.","Your next favorite memory has not happened yet, but it is very close.","Not all gifts arrive in wrapping. Some arrive as detours, delays, and second thoughts.","You are fluent in a kindness that cannot be taught.","The thing keeping you awake is the same thing about to set you free.","Someone who has never met you will benefit from a choice you made today.","Your comfort zone is a beautiful room, but there is an entire house.","What you call luck, the people around you call your character.","A promise you made to yourself years ago is closer to being kept than you think.","The part of you that wants to quit is standing right next to the part that will not.","You are not waiting for permission. You are gathering momentum.","An apology you stopped expecting is still making its way to you.","A skill you think is small is exactly what someone else has been searching for.","The hours you spent wondering were not wasted. They were rehearsal.","You do not need to see the whole staircase to take the next step well.","The person you will become is already proud of who you are today.","What you call overthinking, the universe calls thoroughness.","Somewhere someone is telling a story about you, and it is a good one.","Something you keep putting off is lighter than it looks once you pick it up.","The compliment you shrugged off was more accurate than you allowed.","Your presence in a room changes the room more than you notice.","You are one honest conversation away from a completely different life.","A habit you are quietly building will outlast every worry you have right now.","The next time you feel invisible, remember: roots are invisible too, and they hold everything up.","A detour you resented will become a story you tell with gratitude.","You have already survived every worst day you have ever had.","What is soft in you is not what is weak in you.","The life you want is shy. It is waiting for you to approach it first.","Your generosity is not a leak. It is a spring.","A question someone will ask you this week will change more than you expect.","You are not running out of time. You are running into it.","Clarity does not come before you begin. It comes because you began.","The thing you think disqualifies you is the exact thing that qualifies you.","Someone you barely know thinks about your kindness more than you realize.","The panic will pass. What you build during it will not.","You are allowed to be a masterpiece and a work in progress at the same time.","The map updates itself every time you take a brave step.","Something mundane you did last week mattered enormously to someone else.","Rest is not the opposite of progress. It is the part of progress you cannot see.","The right people do not need you to shrink so they can feel tall.","A yes you say to yourself this week will echo for years.","You are not starting over. You are starting from experience.","There is a version of today you will miss someday. Let it in.","The doubt you feel is just your ambition wearing a disguise.","Something rigid in your life is about to soften exactly where it needs to.","The bravest thing you ever did looked like a small thing at the time.","An idea that embarrasses you slightly is usually the one worth pursuing.","You are the answer to a question someone has not thought to ask yet.","Forgiveness is not a gift to them. It is space you are making for yourself.","The thing you need to hear is the thing you are most afraid to say.","A place you have never visited is already waiting to feel like home.","The version of you that rested today will outperform the version that pushed through.","You do not owe anyone your exhaustion.","What you water will grow. Choose carefully and then choose to be patient.","Your next breakthrough is disguised as an ordinary Tuesday.","The people who matter most can hear what you mean even when you stumble over the words.","Someone is about to see you the way you have always wanted to be seen.","A small rebellion against your own expectations will feel like freedom.","The hard thing and the right thing are holding hands in front of you.","Regret is just proof that you have grown past who you were.","You are closer to understanding than you are to giving up. Keep going.","An inconvenience is rerouting you toward something that could not find you on the main road.","You have a talent for arriving exactly when you are needed.","What bores you is a clue. What lights you up is a map.","The part of you that feels behind is measuring against a race you were never in.","Every locked door in your past was protecting the open one ahead.","You are allowed to change the dream. The dream is allowed to change you back.","Someone today will feel less alone because of something only you can give.","The boundary that feels selfish now will feel like wisdom later.","A long exhale can do more than a year of worrying.","The mess you think you are in is actually materials for what you are building.","You were not born to just pay bills and be tired. There is a wilder purpose circling you.","The story you keep telling yourself about who you are is due for a revision.","Someone is bragging about knowing you. Let that sink in.","A question you are too afraid to ask has a gentler answer than you imagine.","The tender thing inside you is not naive. It is the strongest thing you own.","Something you are about to let go of has been waiting for you to release it.","You have enough. You do enough. You are enough. Start there.","A coincidence heading your way is actually a plan you did not write.","The meal you share this week will mean more than the words exchanged over it.","What you call a flaw, someone else calls the reason they trust you.","The season you are in is not forever. It is a passage.","You have already made someone\u2019s life significantly better just by being consistent.","The fear that you are not ready is almost always arriving right on time.","A room you have been afraid to enter has better lighting than you imagined.","Your kindness today is someone\u2019s evidence that tomorrow is worth getting to.","Something you said no to made space for a yes you have not met yet.","Doing nothing for a while is sometimes the most productive thing you can do.","The part of your story you would skip is the part someone else needs to hear.","You are not lost. You are exploring.","A door is about to open that does not look like a door.","What you protect with your silence is exactly what needs your voice.","Your hands are capable of more gentleness and more strength than you have tested.","The favor you did without keeping score is coming back multiplied.","Worry is just imagination pointed in the wrong direction. Aim it elsewhere.","Your rough draft is someone else\u2019s finished masterpiece.","There is a conversation happening about you right now, and it is full of admiration.","The sunrise does not rush, and neither should the good things coming your way.","Something you are carrying does not belong to you. Put it down.","A simple act of showing up will be the bravest thing someone witnesses this week.","The cracks in your confidence are only visible from the inside.","You have been someone\u2019s turning point and did not even know it.","You are more prepared than your nerves are telling you.","A pattern you are about to break has been waiting for you to notice it.","What you call wasting time, your future self calls investing in rest.","The courage it took to get here is the same courage that will get you further.","Your laughter heals rooms you never meant to enter.","Something you think you lost was actually released to make room.","The thing you dread doing takes less energy than the dread itself.","An old friend is thinking of reaching out to you. Let them.","You have permission to outgrow places that once felt like home.","The world bends slightly toward people who refuse to be unkind.","A project you abandoned holds a piece you need for what you are building now.","You have been rehearsing for this moment longer than you realize.","The people who love you are not keeping score. Neither should you.","Stillness is not stalling. It is aim.","Your story has a through line you cannot see yet, but everyone around you can.","Something unremarkable you do every day is secretly remarkable.","The next person who needs your help will not have to ask for it. You will just know.","An hour from now, the thing troubling you will be quieter.","You are the calm in someone\u2019s storm and you have no idea.","The version of success that fits you has not been invented yet. Go make it.","A truth that once hurt you has quietly become your foundation.","Not knowing is not failing. It is the beginning of every good question.","Someone will try to return your energy this week. Let them.","The road that leads to you is one someone is grateful to have found.","A fear you befriend will teach you more than a fear you flee.","Somewhere between where you are and where you are going is a view worth pausing for.","The next chapter does not need the old narrator.","What you are waiting for is also waiting for you.","Your attention is the most valuable thing you give. Spend it on things that grow.","A mistake you keep apologizing for has already been forgiven by everyone except you.","The gentleness you show yourself today will become the strength you carry tomorrow.","Something important will arrive in a whisper. Listen.","The mountain ahead is smaller than the one you already climbed.","You are worthy of the same grace you hand out so freely to others.","A stranger\u2019s smile this week is not random. It is yours.","What feels permanent right now is already shifting.","The best use of today is not perfection. It is presence.","You already own the thing you keep searching for. It is your attention.","Something wonderful is practicing its entrance just offstage.","The language of your life is being translated into something beautiful that you cannot read yet.","The weight you feel is temporary. The strength it is building is not.","Every time you choose honesty over comfort, you build a house that weather cannot touch.","The thing you gave away without thinking was exactly what someone needed to keep going.","You have been planting trees whose shade you have not sat in yet.","Not every open door is an invitation, but the one in front of you is.","The people who see you clearly are not fooled. They are paying attention.","Something is about to click into place so quietly you might miss the sound.","A promise the morning is making to you: today holds at least one good surprise.","Your fingerprint is on something that will outlast you. You just do not know what it is yet.","The best map for your life has not been drawn. You are holding the pen.","The echo of something kind you did is still traveling.","What you thought was falling apart was actually falling into place.","You have been someone\u2019s anchor without ever realizing you were in the water.","The quiet afternoon you almost wasted was actually the rest that saved you.","Your ability to begin again is more powerful than your need to get it right.","A letter you never sent still changed you. That counts.","The thing no one thanked you for is the thing that mattered most.","You are braver than the story your fears keep telling.","An ending you did not choose is making room for a beginning you could not have imagined.","The space between your breaths holds more wisdom than a thousand plans.","Something beautiful is growing in the soil of your patience.","The gift you think is too small is exactly the right size for the person who needs it.","You have been someone\u2019s reason to stay. Do not underestimate your gravity.","A thread you pulled without thinking is about to unravel into something worth wearing.","What you gave up looking for has not given up looking for you.","Your softest moment was your strongest act. Others noticed even if you did not.","The next compliment you receive is trying to tell you something your mirror cannot.","A silence you shared with someone meant more than either of you said.","The garden you forgot to tend has been growing anyway.","You are not too late. The clock you are watching is not the one that matters.","A truth you whispered to yourself at three in the morning deserves daylight.","Your instincts are not guessing. They are remembering forward.","The kindness you extended on a bad day was worth more than the kindness you gave on a good one.","Something you once thought was your ceiling is about to become your floor.","The space you cleared last month is about to be filled with something unexpected.","You are someone\u2019s definition of the word safe.","A dream that visited you twice is not a coincidence. It is an itinerary.","Your fingerprints are on someone\u2019s happiness and you never sent an invoice.","The hardest goodbye you ever said was the first word of your best chapter.","Even your unfinished work has taught someone how to begin.","The worry that woke you up has a shorter lifespan than the peace it interrupted.","You are closer to joy than you were yesterday, even if today feels heavy.","A conversation you are about to have will leave you lighter than you entered it.","The next risk you take will age well.","The crack in your plan is where the light gets in.","A stranger is carrying advice meant only for you.","The most important email you ever send will be the shortest.","Something you lost on purpose found its way back without asking.","Your next good idea is hiding behind your next deep breath.","The person you need to forgive has already forgiven themselves. Your turn.","A book you have not yet opened contains a sentence that will change your year.","The wrong turn you took last month is beginning to look like a shortcut.","Something you are about to say casually will echo longer than a speech.","Your body knows the answer your mind is still debating.","The best version of this week is still available.","An old habit is about to hand you a new superpower.","Someone is about to quote you without knowing it was you who said it.","The fear sitting in your stomach is just excitement wearing a mask.","A door you forgot to close is protecting you from something you no longer need.","Your phone holds a message you have not written yet that will matter immensely.","The silence after a hard day is not emptiness. It is composting.","Something you are allergic to is about to leave your life permanently.","The dream you stopped chasing slowed down so you could catch up.","A gesture so small you almost skipped it will ripple for months.","Your stubbornness is about to be reclassified as vision.","Someone will hand you exactly the right thing at exactly the wrong time. Accept it anyway.","The rule you are about to break was waiting for someone brave enough.","Something you call a habit is actually a talent in disguise.","The nap you almost took would have solved three problems.","Your taste is better than your confidence. Trust the taste.","An argument you won last year quietly lost you something bigger. Let it teach you.","The ceiling you see is actually a floor for the room above you.","A photograph you have not taken yet will become your favorite.","Something expensive in your life is about to be replaced by something free.","Your next three decisions matter more than your last three hundred.","The pause between your thoughts is where your best work happens.","Someone just defended you in a room you will never enter.","A recipe you improvised will outperform one you followed perfectly.","The wall you keep hitting is a door you keep facing sideways.","Something you are embarrassed to want is exactly what you should pursue.","Your morning routine holds a secret ingredient you have been skipping.","The favor you never called in has been earning interest.","A sentence you abandoned in a notebook is not finished with you.","The shortcut everyone warned you about has a view they never mentioned.","Your nervous system remembers a kindness your conscious mind forgot.","Something tangled in your life will unspool if you stop pulling.","The advice you would give your younger self is the advice you need right now.","A door that closed loudly was trying to get your attention, not hurt your feelings.","Something invisible to you is incredibly visible to someone who loves you.","Your vocabulary does not have a word for what you are becoming. That is the point.","The problem you keep solving for others is the one you most need to solve for yourself.","A corner of your home holds the calm you keep seeking elsewhere.","Something you dismissed as luck was actually years of preparation.","The deadline you are dreading is lighter than the dread itself.","Your hands remember how to do something your brain has forgotten.","A coincidence this month is a breadcrumb on a trail you are supposed to follow.","Someone who intimidates you is intimidated by your ease.","The song stuck in your head is trying to deliver a message.","Something you assembled wrong taught you more than the manual ever could.","Your accent is someone else's favorite sound.","A risk you are postponing has an expiration date. It is soon.","The space between where you are and where you want to be is smaller than a single brave sentence.","Something you make without trying is harder than you think for most people.","The key to the next room has been in your pocket the entire tour.","A compliment stuck in your throat would have changed someone's week.","Your handwriting reveals more about you than your resume.","Something bitter you swallowed made room for something sweet arriving.","The longest distance in your life is between knowing and doing. Today, close it.","A stranger's glance today carried recognition. You reminded them of hope.","Something you outgrew is grateful you left.","Your sleep holds a workshop your waking mind has no access to.","The thing that makes you laugh hardest is the thing the world needs more of.","A letter of the alphabet you never think about has your initial. Even language carries you.","Something you do automatically took someone else a lifetime to learn.","Your elbows have never touched. Some limits exist just to remind you that wonder is close.","The oldest story you tell about yourself is due for a rewrite.","A coin in your pocket has traveled further than most people.","Something you gave away cheap will be valued at ten times the price.","Your fingerprints have never appeared on a crime scene. That is a fortune worth noticing.","The person you are avoiding thinks about you more warmly than you expect.","A tree you walk past every day has survived more than you know. Let it remind you.","Something quiet is louder than you think. Something loud is weaker than it sounds.","Your breathing changed when you read this. That is attention. That is power.","The unread book on your shelf is patient. It will wait.","A conversation you keep replaying already ended better than you remember.","Something you built for yourself will shelter someone else.","Your least favorite chore is someone else's meditation.","The time you spent staring out a window was not wasted. It was blueprint work.","A scar you hide has a story someone needs to hear.","Something you cooked from memory tasted better than something you measured.","Your shadow has perfect posture even when you slouch.","The last time you cried cleaned a lens you didn't know was dirty.","A tool you bought and never used is about to become essential.","Something you thought you imagined actually happened.","Your earliest memory holds a clue to your deepest talent.","The playlist you made for someone else healed you more than it healed them.","A bridge you almost burned became the only way back to something important.","Something borrowed taught you more about yourself than anything you own.","Your next good year starts on an unremarkable day. Possibly today.","The apology you rehearsed ten times only needs to be three words long.","A sunset you photographed has already been deleted. But the feeling is still installed.","Something you keep meaning to organize is fine exactly as it is.","Your most honest moment this month was also your bravest.","The coffee that went cold taught you to pay attention.","A door you enter sideways opens wider than one you charge through.","Something slow is building in the background of your life. It will announce itself soon.","Your shoes know more about your decisions than your calendar.","The book you almost returned to the library changed you before you finished it.","A fork in the road you chose years ago is still paying dividends.","Something you consider a weakness is someone else's missing piece.","The pen you borrowed and forgot to return carried a word that mattered.","Your next creative act does not need permission, a title, or an audience.","A morning you dreaded became an afternoon you treasured.","Something you repaired instead of replacing taught you more than either option alone.","Your luckiest day did not announce itself. Neither will the next one.","The walk you almost skipped would have introduced you to an idea.","A reflection you caught in a window showed you something a mirror never could.","Something you started as a joke became the most serious good you have done.","Your handshake communicates more than your elevator pitch.","The rain you complained about was watering something you planted.","A lie you stopped telling freed a truth you didn't know was trapped.","Something you declined politely cleared space for an impolite miracle.","Your bones have carried you through every storm without asking for credit.","The song you cannot remember the name of remembers you.","A conversation you ended too soon had one more sentence that would have mattered.","Something you threw away is now considered valuable. But something you kept is priceless.","Your footsteps sound different when you walk with purpose. Others can hear the difference.","The receipt you threw away recorded a moment, not just a transaction.","A season you hated taught you something no comfortable season could.","Something you learned by accident will outperform something you studied deliberately.","Your average day is someone else's answered prayer.","The stain on your shirt is proof you lived today.","A wrong number you once received delivered a right message.","Something you built from scraps will outlast what others built from plans.","Your teeth have bitten your tongue thousands of times to protect someone else.","The midnight thought you ignored was louder than the alarm that woke you.","A photo of you exists that you have never seen. In it, you look happy.","Something you forgot to pack turned out to be unnecessary.","Your rhythm is not broken. It is syncopated.","The library book you returned carried your DNA into someone else's hands.","A corner you cut saved you nothing. But the corner you did not cut saved everything.","Something you assumed was too late is exactly on time.","Your kitchen knows more of your secrets than your closest friend.","The text you deleted would have been perfect. The one you sent was better.","A sunset you watched alone was shared by a thousand strangers.","Something you stepped over was a threshold in disguise.","Your doubt speaks loudly, but it has a terrible track record.","The jacket you almost donated has one more season left. And so do you.","A word you mispronounced endeared you to someone who was afraid of being imperfect.","Something you fixed for free was worth more than anything you charged for.","Your tears cleaned a window your pride kept fogging up.","The route you take without thinking is teaching your feet a poem.","A sandwich you made without fanfare was someone's best meal this month.","Something unfinished on your desk is not a failure. It is a promise.","Your posture changes the moment you remember you are loved.","The thing you do when nobody is watching is your truest art.","A gift you received and set aside is about to become relevant.","Something you almost said no to delivered the best yes of your year.","Your skin has regenerated so many times that nothing touching you today touched you ten years ago.","The stairs you took instead of the elevator gave you three more good ideas than you expected.","A restaurant you will never return to served you a memory that will last forever.","Something you taught yourself is more impressive than you credit.","Your pillow knows the shape of your dreams better than any therapist.","The penny you ignored has been on a longer journey than you can imagine.","A cloud you watched dissolve modeled something you need to practice.","Something you said to be polite turned out to be prophetic.","Your left hand and right hand have different skills. Together they can do anything.","The bird that flew past your window was not a metaphor. But let it be one if you need it.","A conversation overheard in a coffee shop held a line that was written for you.","Something you forgot to say at dinner is still waiting for breakfast.","Your most productive hour last week was the one where you did nothing measurable.","The grocery list you wrote by hand was a love letter to the week ahead.","A light you left on by accident guided someone home.","Something mechanical you understand reveals something poetic you have not yet noticed.","Your blood carries oxygen and stories. Both keep you alive.","The mirror shows your surface. The fortune in your hand shows your depth.","A drawer you have not opened in years is a time capsule from a braver you.","Something cheap you bought with joy outvalues something expensive you bought with doubt.","Your next breath carries the exact amount of oxygen needed for your next sentence.","The fence you sat on gave you a view that neither side could see.","A scribble in a margin is closer to genius than a perfect paragraph.","Something you let go of gently landed somewhere it was needed.","Your pace is not slow. It is deliberate. There is a canyon between the two.","The first sip is always the best. The same is true of courage.","A question you asked a child taught you more than any lecture.","Something warm in your pocket is not just a phone. It is a universe of people who chose to know you.","Your inbox contains more evidence of your importance than you give it credit for.","The stranger who held the door was not being polite. They were being prophetic.","A food you hated as a child is waiting to surprise you.","Something you whispered travels further than something you shouted.","Your eyelids have blinked more times than there are stars visible from Earth. Every blink was a tiny act of faith.","The voicemail you almost deleted contained the tone of someone who needs you.","A crack in the sidewalk you step over daily has been there longer than your worries.","Something boring you endured is funding something exciting you have not yet imagined.","Your wrist knows the weight of the world better than your shoulders.","The notebook you carry is not empty. It is loaded.","A shirt you wore on a good day still carries the frequency.","Something you mailed arrived slower than an email but hit harder than a text.","Your commute holds a pattern only your subconscious can decode.","The ice cube in your glass was once a cloud. Transformations take time, not permission.","A bill you paid without complaint freed you from resentment you did not know you were carrying.","Something you practiced badly a hundred times will surface perfectly once, at the exact right moment.","Your spine holds you up even when your spirit considers sitting down.","The button you sew back on is a small act of loyalty the garment will never forget.","A lunch you ate alone was shared with your future self.","Something you overwatered survived anyway because it wanted to live near you.","Your kitchen timer knows more about patience than most philosophers.","The sweater that pilled has been hugged more than the one that did not.","A mistake you made in pencil is easier to fix than a mistake you made in permanence.","Something you read on a train window was condensation pretending to be a message. Let it be one.","Your keys jangle a song only you can hear.","The grocery bag that broke spilled evidence of your good taste.","A wall you painted covers a history but starts a future.","Something you hung crooked gives the room more character than something you hung straight.","Your towel knows when you need comfort and when you need to dry off. You do too.","The stamp on a letter you sent carried your saliva and your intention across the country.","A potluck dish you were unsure about was the first one finished.","Something you keep in your wallet that is not money is worth more than everything that is.","Your alarm clock is not your enemy. It is your daily invitation.","The bookmark you left in chapter seven is holding your place in a transformation.","A parking spot you circled for is teaching you something about patience and arrival.","Something crumpled in your pocket is a receipt for an investment in joy.","Your refrigerator hum is the most reliable sound in your life. Reliability is underrated.","The plant you talk to grows faster than the one you ignore. So do people.","A podcast episode you skipped held the sentence that would have clicked.","Something you assembled with your hands knows your touch better than your keyboard does.","Your coffee mug holds more than coffee. It holds the first five minutes of your intentional day.","The pen that ran out of ink documented more truth than the one still full.","A stone you skipped across water taught physics a lesson about joy.","Something that takes you two minutes to do takes someone else two hours to learn.","Your reflection in a puddle has more depth than your reflection in a mirror.","The leftovers you almost threw out became the best meal of the week.","A hallway you walk through every day is a gallery you have not curated yet.","Something you keep meaning to clean is dirty with evidence of a life well lived.","Your breathing while you sleep is a promise your body makes and keeps every night.","The spoon you always reach for first has earned something no other spoon has.","A blanket folded on your couch is a standing invitation for rest.","Something you do in the first minute of waking sets the compass for the day. Choose it wisely.","Your mailbox holds potential even when it holds nothing.","The crack in your favorite mug is kintsugi waiting to happen.","A cloud that looks like nothing is the most honest cloud in the sky.","Something you said to fill silence turned out to be the only thing that needed saying.","Your shoulder has been cried on. That makes it sacred ground.","The draft you saved but never sent was your boundary learning to speak.","A chair you sit in daily has memorized the shape of your thinking.","Something you washed by hand came out cleaner than something the machine washed.","Your umbrella has opened for you more faithfully than most promises.","The tea that steeped too long taught you that patience has limits and that is fine.","A bruise you cannot remember getting is proof you were too busy living to notice.","Something you keep in a jar used to be part of a moment that mattered.","Your doormat absorbs more than mud. It absorbs the weight of arrival.","The window you leave open at night invites more than air.","A corner of your desk that stays messy is where your creativity lives.","Something you labeled unnecessary was just early.","Your belt holds more than your pants. It holds the shape of your daily commitment.","The bus you missed put you on the next one where something better was waiting.","A scent that stops you in your tracks is a memory disguised as chemistry.","Something you fold the same way every time is a ritual you have not honored yet.","Your wristwatch ticks even when you forget to listen. So does your purpose.","The store that closed before you arrived saved you from a purchase you did not need.","A feather that landed near you did not fall. It was placed.","Something you keep restarting is not a failure. It is devotion.","Your ankles have carried you through every decision, good and questionable.","The receipt you signed was a tiny autograph. You leave your name on more moments than you count.","A day with no plans is a canvas, not a waste.","Something you keep in your glove compartment has been waiting patiently to be useful.","Your voice sounds different to others than it does to you. Theirs is the better version.","The thread that unraveled saved the whole seam from tearing.","A glass of water you pour for yourself is an act of self-respect so small it is almost invisible.","Something you swept under the rug has decomposed into the foundation.","Your handwriting is a fingerprint that moves.","The light switch you flip every morning is the first decision in a chain of thousands.","A stone in your shoe taught you more about tolerance than a year of philosophy.","Something you cooked without a recipe is a form of jazz.","Your elbow has bumped more tables than you have bumped into opportunities. Both are changing.","The Wi-Fi password you memorized replaced a fact you used to know. Let that sit.","A snack you packed for later saved a version of you that had not arrived yet.","Something you opened with your teeth was not a sign of impatience. It was resourcefulness.","Your calendar has more white space than you realize. That space is where life happens.","The toothbrush you use twice a day has been more consistent than most of your commitments. Let it inspire you.","A candle you lit changed the chemistry of a room and the chemistry of a mood.","Something wrinkled in your bag carried more truth than something pressed in your closet.","Your pillowcase knows the temperature of your worries and the temperature of your relief.","The bus seat you chose put you next to a window that framed something you needed to see.","A coin you dropped rolled further than your eye could follow. Let some things go like that.","Something you signed without reading still worked out. Not all faith is foolish.","Your thumbnail grows whether you celebrate it or not. So does your character.","The power outlet behind your couch has been patiently waiting to be useful.","A paper clip holds more together than its size suggests. So do you.","Something analog you kept in a digital world is now a artifact of intention.","Your grocery bag is heavier on the way home because you chose abundance.","The crossword you abandoned taught you three words you did not know you needed.","A shoe that fits perfectly is a relationship worth acknowledging.","Something you taped back together lasted longer than something that never broke.","Your fingerprint unlocks more than your phone. It unlocks the fact that no one in history has been you.","The tea bag string dangling over the edge of the cup is a tiny flag of patience.","A wall you leaned against held you up when you didn't realize you needed holding.","Something you saved for a rainy day will be used on a sunny one instead. That is allowed.","Your tongue has tasted both tears and honey. It knows the full range, and that is its gift.","The rubber band on your wrist is a reminder you set and a boundary you kept.","A doodle you drew while distracted is more honest than a portrait you posed for.","Something you left on a park bench is giving someone else a small adventure right now.","The elevator button you pressed was already lit. Someone before you wanted the same floor.","A jar lid you loosened for someone else opened something in you too.","Something you ironed smooth still carries the warmth of your attention.","Your reflection in a spoon is upside down. Some perspectives need flipping.","The sticky note you wrote yourself is a letter from past you. Read it kindly.","A thread you pulled did not unravel anything. It revealed a seam.","Something magnetic on your fridge has been holding more than paper.","Your footprint in wet cement dried into permanence. So did your kindness.","The lint in your pocket is evidence of a journey between moments.","A chair you pulled out for someone gave them more than a seat.","Something you salted just right was not a recipe. It was instinct.","Your zipper goes up and down without complaint. Resilience comes in small metals.","The eraser shavings on your desk are evidence of growth, not mistakes.","A corner you swept clean made room for a thought you did not know you needed.","Something you plugged in charged more than a device.","Your shoelace knows the shape of your morning resolve.","The spare key you hid is an act of faith in your own forgetfulness.","A glass you dried by hand came out clearer than one left to air dry.","Something you peeled back revealed a layer you were meant to find.","Your pockets carry the weight of small decisions all day without complaining.","The scratch on your table tells the story of every meal shared above it.","A curtain you opened this morning gave the room permission to wake up.","Something you sharpened was not just a pencil. It was your focus.","Your pantry holds ingredients for a meal you have not imagined yet.","The creak in your floor is the house acknowledging your presence.","A handle you turned opened more than a door.","Something you wound up kept going longer than you expected.","Your ringtone is a tiny anthem you chose for the moments that interrupt your life.","The tag you cut out of your shirt was a small rebellion with lasting comfort.","A sticker you placed as a child is still holding on somewhere.","Something symmetrical in nature reminded you that balance exists without effort.","Your thumb has scrolled past more wisdom than any ancient library held. Slow it down.","The parking meter you fed bought someone else time they did not know they needed.","A fruit you let ripen one more day was twice as sweet.","Something you stirred clockwise someone else stirs the other way. Both arrive at the same warmth.","Your keychain carries more identity than your driver's license.","The matchstick that lit the candle disappeared to create the glow.","A puddle you avoided reflected a sky you did not look up to see.","Something you packed too early was not anxiety. It was readiness.","Your bathrobe knows the shape of every quiet morning you have claimed.","The typo you caught saved a meaning from becoming a different one entirely.","A cloud that blocked the sun was not a nuisance. It was a frame for the blue around it.","Something you dusted off remembers being new.","Your threshold absorbs the pause between outside and inside. Honor that pause.","The extension cord you untangled was a meditation you did not know you were doing.","A button you buttoned while thinking about something else was still a button well buttoned.","Something perfectly round you found on the ground was a gift from geometry.","Your breath fogs a window because you are warm and the world is not. That is a metaphor.","The bookmark fell out and you found your page anyway. Trust yourself.","A drawer that sticks is asking you to slow down before you reach inside.","Something you labeled with a marker is now permanent in two ways.","Your heel strikes the ground sixty times a minute. Each one is a small commitment to forward.","The napkin you folded into a shape at dinner was art you did not sign.","A lightbulb you changed illuminated more than a room.","Something you rinsed and reused instead of throwing away is proof you believe in second chances.","Your collarbone catches light in a way that has stopped at least one person mid-sentence.","The thermostat you adjusted was a negotiation between comfort and compromise.","A map you folded wrong still got you where you needed to go.","Something you memorized by accident is more useful than something you memorized on purpose.","Your sneeze has traveled at eighty miles per hour. Even your involuntary acts are powerful.","The voicemail you left was imperfect and that is exactly what made it real.","A corner of your closet holds something you will rediscover at the perfect time.","Something you chose not to photograph is better preserved in your memory because of it.","Your morning coffee carries more ritual significance than most ceremonies.","The Wi-Fi signal in your home passes through you sixty times a second. You are more permeable than you think.","A faucet you tightened saved more than water.","Something laminated lasted longer because you cared enough to protect it.","Your kneecap is the hardest working joint in a body that never stops collaborating.","The paper towel you used to clean up a spill also cleaned up a moment.","A corner seat you chose gave you two walls and one view. Sometimes less exposure means more perspective.","Something magnetic about you has nothing to do with magnets.","Your toenails grow whether you notice or not. Growth does not require your attention to continue.","The trash you took out made room for the morning you are about to have.","A glass you raised in a toast carried more meaning in the clink than in the words.","Something you flattened with your palm was not just a crease. It was chaos being smoothed.","Your iris is a pattern that exists nowhere else in the universe. Look people in the eye more often.","The outlet adapter you packed was not overthinking. It was fluency in preparedness.","A thread count you never checked still gave you a good night's sleep.","Something you hung on a hook instead of throwing on the floor was a small vote for the future.","Your thumbnail sketch captured something a finished painting would have overworked.","The grocery store aisle you skipped saved you from a version of yourself you did not need today.","A zipper you zipped without looking trusted your hands. Trust them more often.","Something sour you tasted made the next sweet thing sweeter.","Your knee bends in one direction so you can only walk forward. Design is not accidental.","The tape measure you pulled out measured more than a shelf. It measured your ambition.","A grain of salt you added was not skepticism. It was seasoning.","Something you did not water still bloomed. Some things are tougher than your worry.","Your vocal cords are the length of a dime and they carry your entire identity.","The penny you found face-up has been to more places than your passport.","A spoon you stirred with transferred warmth from your hand to someone's meal.","Something you wiped clean revealed a surface you forgot was beautiful.","Your pulse is a metronome that never rests. It has kept time through every decision you have ever made.","The night light you left on was a small promise kept to the dark.","A wrinkle in your bedsheet maps the geography of your rest.","Something you stacked neatly is a monument to your belief in order.","Your exhale carries carbon dioxide that a plant will breathe in and return as oxygen. You are part of a cycle older than language.","The last fortune you read is still working on you. This one just joined it.","A step you took barefoot connected you to the ground in a way shoes never could.","Something you whispered into a pillow was heard by the part of you that needed it most.","Your cuticles pushed back without ceremony. Maintenance is a form of devotion.","The magnet on your fridge holds a photo that holds a moment that holds a feeling that holds you together.","A puddle you splashed through on purpose was the most honest thing you did all week.","Something you kept in a box is not forgotten. It is archived.","Your jawline carries tension and tenderness in equal measure.","The crosswalk you waited at taught you that sometimes the safest thing is also the most patient.","A receipt you crumpled held proof of a choice you made with your own money and your own taste.","Something you hummed without thinking was a song your soul chose.","Your wrist pulse is visible if you look closely. That is vulnerability you carry everywhere.","The last page of a book you loved was not an ending. It was a door marked re-read.","A fork you set on the right side of the plate honored a tradition you never formally learned.","Something heavy you carried upstairs built something invisible inside you.","Your morning stretch is a conversation between the body you slept in and the body you need today.","The rubber sole of your shoe has gripped the earth through every uncertain step.","A clock you forgot to set still told you when you woke that you were ready.","Something cool you touched on a hot day was the earth reminding you it is still here.","Your lungs expand sixty thousand times without being asked. You are held by systems that do not require your gratitude to function.","The chalk dust on your hands is proof you tried to explain something that mattered.","A hinge you oiled stopped squeaking. Some relationships just need a small kindness.","Something you borrowed and returned in better condition earned you invisible trust.","Your peripheral vision catches more beauty than your focused gaze. Look sideways at your life sometime.","The dish soap in your sink fights small battles every day so you can eat off clean surfaces. Appreciate the unglamorous workers.","A staircase you descended with confidence was built by someone who never saw your face.","Something papery in your wallet has survived more than you thought paper could.","Your collarbone rises and falls with each breath like a horizon that never stops dawning.","The cork you pulled from a bottle released more than wine.","A postcard you sent arrived after you forgot you sent it. Delayed kindness is still kindness.","Something you tossed in the air and caught was not just a set of keys. It was trust in gravity and yourself.","Your heels know the sound of every surface you have ever crossed.","The candle wick you trimmed was not maintenance. It was curation of light.","A word you looked up in the dictionary introduced you to three words you did not expect.","Something you folded in thirds fit perfectly in an envelope because the math of courtesy works.","Your inner ear keeps you balanced without a single conscious thought. You are supported by architecture you cannot see.","The price tag you removed was the last trace of the store. The object is yours now. Fully.","A towel you offered someone was not just cloth. It was permission to be uncomfortable and recover.","Something you carried in your teeth because your hands were full was resourcefulness, not gracelessness.","Your morning commute has taught you the names of buildings you will never enter. Familiarity is a kind of love.","The saltshaker you reach for first has been chosen a thousand times. Your preferences are loyal.","A seed you planted in the wrong season survived because stubbornness runs in both directions.","Something you memorized as a child lives in a room of your brain that never loses power.","Your ring finger wears a groove even when nothing is on it. Absence can be its own shape.","The power strip behind your desk quietly serves six things at once without asking for thanks.","A hat you wore on a cold day protected thoughts that had not finished forming.","Something you licked to seal was bound by the oldest adhesive: your commitment.","Your molars do the quiet work of breaking things down so the rest of you can absorb them.","The grout between your tiles holds more together than the tiles themselves.","A bell you rang once kept vibrating long after your hand moved on.","Something round you rolled across a table obeyed the same physics as planets. You live in a universe of consistent rules.","Your cupboard closes with a click that sounds like a small agreement.","The ice you cracked with your fingers was water holding still until you gave it permission to move.","A leaf you caught mid-fall interrupted something inevitable with something gentle.","Something you taped to a wall is an exhibition you curated for an audience of yourself.","Your chin rests on your hand more than you realize. Even your skeleton is comfortable with you.","The batteries you replaced gave a device a second life and you the satisfaction of a small resurrection.","A corner you peeked around before entering taught you that caution and curiosity are siblings.","Something you dried in the sun absorbed more than heat. It absorbed time.","Your throat has swallowed every brave and cowardly thing you have ever eaten. It does not judge.","The spare change in your console has been on more rides than most passengers.","A blanket you threw over your legs was not laziness. It was declaring the day officially gentle.","Something you peeled slowly came apart cleaner than something you ripped.","Your morning yawn is the body's opening statement before the day's case begins.","The last thing you do before sleep is the first thing your dreams inherit."],
+  zh:["\u4F60\u5FD8\u8BB0\u6253\u5F00\u7684\u4E00\u6247\u95E8\uFF0C\u5373\u5C06\u8BA9\u975E\u51E1\u7684\u4E8B\u7269\u8D70\u8FDB\u6765\u3002","\u4F60\u501F\u7ED9\u522B\u4EBA\u7684\u52C7\u6C14\uFF0C\u6B63\u5728\u60A8\u5FC3\u4E2D\u60C4\u60C4\u5EFA\u9020\u4E00\u5EA7\u5821\u5792\u3002","\u5728\u7591\u60D1\u4E2D\u79CD\u4E0B\u7684\u79CD\u5B50\uFF0C\u5373\u5C06\u7ED3\u51FA\u8D85\u8D8A\u60F3\u8C61\u7684\u679C\u5B9E\u3002","\u5B87\u5B99\u6B63\u5728\u91CD\u65B0\u6392\u5217\uFF0C\u4E3A\u5373\u5C06\u5230\u6765\u7684\u4F60\u817E\u51FA\u7A7A\u95F4\u3002","\u4F60\u4E00\u76F4\u56DE\u907F\u7684\u5BF9\u8BDD\uFF0C\u85CF\u7740\u4F60\u4E00\u76F4\u5728\u5BFB\u627E\u7684\u7B54\u6848\u3002","\u4F60\u5DEE\u70B9\u653E\u5F03\u7684\u4E8B\u60C5\uFF0C\u6BD4\u4F60\u60F3\u8C61\u7684\u66F4\u63A5\u8FD1\u5B9E\u73B0\u3002","\u6709\u4EBA\u5373\u5C06\u56DE\u62A5\u4F60\u5DF2\u7ECF\u5FD8\u8BB0\u7684\u5584\u610F\u3002","\u4E16\u754C\u4E0D\u9700\u8981\u4F60\u5B8C\u7F8E\u2014\u2014\u5B83\u9700\u8981\u4F60\u5728\u573A\u3002","\u4F60\u5BFB\u627E\u7684\u8D22\u5BCC\u4E0D\u5728\u524D\u65B9\u2014\u2014\u5B83\u5DF2\u7ECF\u5728\u4F60\u5FC3\u4E2D\u3002","\u4F60\u5E76\u6CA1\u6709\u843D\u540E\u3002\u4F60\u6B63\u5728\u521B\u9020\u4E00\u6761\u524D\u6240\u672A\u6709\u7684\u9053\u8DEF\u3002","\u5E78\u798F\u7684\u914D\u65B9\u6BD4\u4F60\u60F3\u8C61\u7684\u66F4\u7B80\u5355\u3002","\u4F60\u5DF2\u7ECF\u662F\u67D0\u4EBA\u6700\u559C\u6B22\u7684\u4EBA\u3002\u611F\u53D7\u4E00\u4E0B\u8FD9\u4EF6\u4E8B\u3002","\u7528\u7231\u753B\u7684\u754C\u9650\uFF0C\u6BD4\u7528\u6012\u6C14\u753B\u7684\u66F4\u53D7\u5C0A\u91CD\u3002","\u4E07\u7269\u7686\u6709\u88C2\u7F1D\uFF0C\u90A3\u662F\u5149\u7167\u8FDB\u6765\u7684\u5730\u65B9\u3002","\u8010\u5FC3\u4E0D\u662F\u88AB\u8003\u9A8C\uFF0C\u800C\u662F\u88AB\u6162\u6162\u5956\u8D4F\u3002","\u4F60\u7684\u6E29\u6696\u80FD\u878D\u5316\u529B\u91CF\u65E0\u6CD5\u6253\u7834\u7684\u969C\u788D\u3002","\u4F60\u4E0E\u4F17\u4E0D\u540C\u7684\u5730\u65B9\uFF0C\u6B63\u662F\u4F60\u4E0D\u53EF\u6216\u7F3A\u7684\u539F\u56E0\u3002","\u4F60\u7684\u4E0B\u4E00\u7AE0\u6709\u4E2A\u8F6C\u6298\uFF0C\u4F1A\u8BA9\u4F60\u611F\u6FC0\u6BCF\u4E00\u6B21\u7ED5\u8DEF\u3002","\u770B\u4F3C\u7ED3\u675F\u7684\u4E8B\u60C5\uFF0C\u5176\u5B9E\u662F\u5B87\u5B99\u5728\u4E3A\u4F60\u6E05\u7406\u8DD1\u9053\u3002","\u5FC3\u4E2D\u5B89\u9759\u7684\u58F0\u97F3\uFF0C\u6BD4\u5927\u58F0\u7684\u66F4\u51C6\u786E\u3002"],
+  ja:["\u958B\u3051\u305F\u3053\u3068\u3092\u5FD8\u308C\u3066\u3044\u305F\u6249\u304B\u3089\u3001\u7D20\u6674\u3089\u3057\u3044\u3082\u306E\u304C\u5165\u3063\u3066\u304F\u308B\u3002","\u4ED6\u4EBA\u306B\u8CB8\u3057\u305F\u52C7\u6C17\u304C\u3001\u9759\u304B\u306B\u3042\u306A\u305F\u306E\u5FC3\u306B\u57CE\u3092\u7BC9\u3044\u3066\u3044\u308B\u3002","\u7591\u3044\u306E\u4E2D\u3067\u690D\u3048\u305F\u7A2E\u304C\u3001\u60F3\u50CF\u3092\u8D85\u3048\u3066\u82B1\u958B\u3053\u3046\u3068\u3057\u3066\u3044\u308B\u3002","\u5B87\u5B99\u306F\u3001\u3053\u308C\u304B\u3089\u306E\u3042\u306A\u305F\u306E\u305F\u3081\u306B\u518D\u7DE8\u6210\u4E2D\u3002","\u907F\u3051\u3066\u3044\u305F\u4F1A\u8A71\u306B\u3001\u63A2\u3057\u3066\u3044\u305F\u9375\u304C\u96A0\u308C\u3066\u3044\u308B\u3002","\u8AFE\u3081\u304B\u3051\u305F\u3053\u3068\u304C\u3001\u601D\u3063\u305F\u3088\u308A\u5B9F\u73FE\u306B\u8FD1\u3044\u3002","\u5FD8\u308C\u3066\u3044\u305F\u512A\u3057\u3055\u304C\u3001\u3082\u3046\u3059\u304F\u8FD4\u3063\u3066\u304F\u308B\u3002","\u4E16\u754C\u306F\u5B8C\u74A7\u3092\u6C42\u3081\u3066\u3044\u306A\u3044\u2014\u2014\u3042\u306A\u305F\u306E\u5B58\u5728\u3092\u6C42\u3081\u3066\u3044\u308B\u3002","\u6C42\u3081\u308B\u5E78\u904B\u306F\u524D\u306B\u306F\u306A\u304F\u3001\u3082\u3046\u3042\u306A\u305F\u306E\u4E2D\u306B\u3042\u308B\u3002","\u9045\u308C\u3066\u3044\u308B\u306E\u3067\u306F\u306A\u3044\u3002\u307E\u3060\u5B58\u5728\u3057\u306A\u3044\u9053\u3092\u4F5C\u3063\u3066\u3044\u308B\u6700\u4E2D\u3002","\u5E78\u305B\u306E\u30EC\u30B7\u30D4\u306F\u601D\u3063\u305F\u3088\u308A\u30B7\u30F3\u30D7\u30EB\u3002","\u3042\u306A\u305F\u306F\u3082\u3046\u8AB0\u304B\u306E\u4E00\u756A\u5927\u5207\u306A\u4EBA\u3002\u305D\u308C\u3092\u5473\u308F\u3063\u3066\u3002","\u611B\u3067\u5F15\u3044\u305F\u5883\u754C\u7DDA\u306F\u3001\u6012\u308A\u3067\u5F15\u3044\u305F\u3082\u306E\u3088\u308A\u5C0A\u91CD\u3055\u308C\u308B\u3002","\u3059\u3079\u3066\u306B\u306F\u88C2\u3051\u76EE\u304C\u3042\u308B\u3002\u305D\u3053\u304B\u3089\u5149\u304C\u5DEE\u3057\u8FBC\u3080\u3002","\u5FCD\u8010\u306F\u8A66\u3055\u308C\u3066\u3044\u308B\u306E\u3067\u306F\u306A\u304F\u3001\u3086\u3063\u304F\u308A\u5831\u308F\u308C\u3066\u3044\u308B\u3002","\u3042\u306A\u305F\u306E\u6E29\u304B\u3055\u306F\u3001\u529B\u3067\u306F\u58CA\u305B\u306A\u3044\u58C1\u3092\u6EB6\u304B\u3059\u3002","\u6016\u3044\u9053\u3068\u6E80\u305F\u3055\u308C\u308B\u9053\u306F\u540C\u3058\u9053\u3002","\u3042\u306A\u305F\u3092\u7279\u5225\u306B\u3057\u3066\u3044\u308B\u3082\u306E\u304C\u3001\u3042\u306A\u305F\u3092\u5FC5\u8981\u306B\u3057\u3066\u3044\u308B\u3002","\u5FC3\u306E\u4E2D\u306E\u9759\u304B\u306A\u58F0\u306F\u3001\u5927\u304D\u306A\u58F0\u3088\u308A\u6B63\u78BA\u3060\u3002","\u6B21\u306E\u7AE0\u306B\u306F\u3001\u3059\u3079\u3066\u306E\u56DE\u308A\u9053\u306B\u611F\u8B1D\u3059\u308B\u5C55\u958B\u304C\u5F85\u3063\u3066\u3044\u308B\u3002"],
+  ko:["\uC5F4\uC5B4\uB450\uC5C8\uB358 \uBB38\uC744 \uD1B5\uD574 \uBE44\uBC94\uD55C \uAC83\uC774 \uB4E4\uC5B4\uC624\uB824 \uD55C\uB2E4.","\uB2E4\uB978 \uC0AC\uB78C\uC5D0\uAC8C \uBE4C\uB824\uC900 \uC6A9\uAE30\uAC00 \uC870\uC6A9\uD788 \uB2F9\uC2E0\uC758 \uB9C8\uC74C\uC5D0 \uC131\uC744 \uC313\uACE0 \uC788\uB2E4.","\uC758\uC2EC \uC18D\uC5D0 \uC2EC\uC740 \uC528\uC557\uC774 \uC0C1\uC0C1\uC744 \uCD08\uC6D4\uD558\uC5EC \uD53C\uC5B4\uB098\uB824 \uD55C\uB2E4.","\uC6B0\uC8FC\uAC00 \uB2E4\uAC00\uC62C \uB2F9\uC2E0\uC744 \uC704\uD574 \uC7AC\uBC30\uCE58\uB418\uACE0 \uC788\uB2E4.","\uD53C\uD574\uC628 \uB300\uD654 \uC18D\uC5D0 \uCC3E\uB358 \uC5F4\uC1E0\uAC00 \uC228\uACA8\uC838 \uC788\uB2E4.","\uD3EC\uAE30\uD558\uB824\uB358 \uAC83\uC774 \uC0DD\uAC01\uBCF4\uB2E4 \uC2E4\uD604\uC5D0 \uAC00\uAE4C\uC6CC\uC838 \uC788\uB2E4.","\uC78A\uACE0 \uC788\uB358 \uCE5C\uC808\uC774 \uACE7 \uB3CC\uC544\uC62C \uAC83\uC774\uB2E4.","\uC138\uC0C1\uC740 \uC644\uBCBD\uD568\uC744 \uC6D0\uD558\uC9C0 \uC54A\uB294\uB2E4 \u2014 \uB2F9\uC2E0\uC758 \uC874\uC7AC\uB97C \uC6D0\uD55C\uB2E4.","\uCC3E\uB294 \uD589\uC6B4\uC740 \uC55E\uC5D0 \uC788\uC9C0 \uC54A\uB2E4 \u2014 \uC774\uBBF8 \uB2F9\uC2E0 \uC548\uC5D0 \uC788\uB2E4.","\uB4A4\uCC98\uC9C4 \uAC8C \uC544\uB2C8\uB2E4. \uC544\uC9C1 \uC5C6\uB294 \uAE38\uC744 \uB9CC\uB4E4\uACE0 \uC788\uB294 \uC911\uC774\uB2E4.","\uD589\uBCF5\uC758 \uB808\uC2DC\uD53C\uB294 \uC0DD\uAC01\uBCF4\uB2E4 \uAC04\uB2E8\uD558\uB2E4.","\uB2F9\uC2E0\uC740 \uC774\uBBF8 \uB204\uAD70\uAC00\uC758 \uAC00\uC7A5 \uC18C\uC911\uD55C \uC0AC\uB78C\uC774\uB2E4.","\uC0AC\uB791\uC73C\uB85C \uADF8\uC740 \uACBD\uACC4\uB294 \uBD84\uB178\uB85C \uADF8\uC740 \uAC83\uBCF4\uB2E4 \uC874\uC911\uBC1B\uB294\uB2E4.","\uBAA8\uB4E0 \uAC83\uC5D0\uB294 \uADE0\uC5F4\uC774 \uC788\uB2E4. \uADF8\uACF3\uC73C\uB85C \uBE5B\uC774 \uB4E4\uC5B4\uC628\uB2E4.","\uC778\uB0B4\uB294 \uC2DC\uD5D8\uC774 \uC544\uB2C8\uB77C \uCC9C\uCC9C\uD788 \uBCF4\uC0C1\uBC1B\uACE0 \uC788\uB2E4.","\uB2F9\uC2E0\uC758 \uB530\uB73B\uD568\uC740 \uD798\uC73C\uB85C\uB294 \uAE68\uC9C0 \uBABB\uD560 \uBCBD\uC744 \uB179\uC778\uB2E4.","\uB450\uB824\uC6B4 \uAE38\uACFC \uCDA9\uB9CC\uD55C \uAE38\uC740 \uAC19\uC740 \uAE38\uC774\uB2E4.","\uB2F9\uC2E0\uC744 \uD2B9\uBCC4\uD558\uAC8C \uD558\uB294 \uAC83\uC774 \uB2F9\uC2E0\uC744 \uD544\uC694\uD558\uAC8C \uD55C\uB2E4.","\uB9C8\uC74C\uC758 \uC870\uC6A9\uD55C \uBAA9\uC18C\uB9AC\uAC00 \uD070 \uBAA9\uC18C\uB9AC\uBCF4\uB2E4 \uC815\uD655\uD558\uB2E4.","\uB2E4\uC74C \uC7A5\uC5D0\uB294 \uBAA8\uB4E0 \uC6B0\uD68C\uC5D0 \uAC10\uC0AC\uD558\uAC8C \uB420 \uBC18\uC804\uC774 \uC788\uB2E4."],
+  fr:["Une porte oubli\u00E9e laissera bient\u00F4t entrer quelque chose d\u2019extraordinaire.","Le courage que vous pr\u00EAtez construit une forteresse autour de votre c\u0153ur.","Ce que vous avez plant\u00E9 dans le doute est sur le point de fleurir.","L\u2019univers se r\u00E9arrange pour vous.","La conversation que vous \u00E9vitez d\u00E9tient la cl\u00E9.","Votre prochain chapitre a un rebondissement merveilleux.","Ce que vous avez failli abandonner est plus proche que vous ne pensez.","Le monde a besoin de votre pr\u00E9sence, pas de votre perfection.","La fortune que vous cherchez est d\u00E9j\u00E0 en vous.","Vous cr\u00E9ez un chemin qui n\u2019existait pas encore.","Vous \u00EAtes d\u00E9j\u00E0 la personne pr\u00E9f\u00E9r\u00E9e de quelqu\u2019un.","La recette du bonheur est plus simple que vous ne croyez.","Tout a des fissures. C\u2019est par l\u00E0 que la lumi\u00E8re entre.","Votre chaleur fait fondre les barri\u00E8res.","Votre patience est r\u00E9compens\u00E9e au ralenti.","Ce qui vous rend diff\u00E9rent vous rend n\u00E9cessaire.","La voix tranquille en vous est la plus fiable.","Le chemin qui effraie et celui qui comble sont le m\u00EAme.","Une limite trac\u00E9e avec amour sera respect\u00E9e.","Quelqu\u2019un vous rendra bient\u00F4t une bont\u00E9 oubli\u00E9e."],
+  es:["Una puerta olvidada dejar\u00E1 pasar algo extraordinario.","El coraje que prestas construye una fortaleza en tu coraz\u00F3n.","Algo plantado en la duda est\u00E1 a punto de florecer.","El universo se reorganiza para ti.","La conversaci\u00F3n que evitas contiene la llave.","Tu pr\u00F3ximo cap\u00EDtulo tiene un giro maravilloso.","Lo que casi abandonaste est\u00E1 m\u00E1s cerca de lo que crees.","El mundo necesita tu presencia, no tu perfecci\u00F3n.","La fortuna que buscas ya est\u00E1 dentro de ti.","Est\u00E1s creando un camino que a\u00FAn no existe.","Ya eres la persona favorita de alguien.","La receta de tu felicidad es m\u00E1s simple de lo que piensas.","Todo tiene grietas. Por ah\u00ED entra la luz.","Tu calidez derrite barreras.","Tu paciencia est\u00E1 siendo recompensada.","Lo que te hace diferente te hace necesario.","La voz tranquila dentro de ti es la m\u00E1s certera.","El camino que asusta y el que llena son el mismo.","Un l\u00EDmite con amor ser\u00E1 respetado.","Alguien devolver\u00E1 pronto una bondad olvidada."]
+};
+const BL={en:'new fortune',zh:'\u65B0\u8FD0\u52BF',ja:'\u65B0\u3057\u3044\u904B\u52E2',ko:'\uC0C8 \uC6B4\uC138',fr:'nouvelle fortune',es:'nueva fortuna'};
+let cl='en',last=-1;
+let isTransitioning = false;
+
+function resolveDeviceLang(){
+  const raw=(navigator.language||'en').toLowerCase();
+  if(raw.startsWith('zh')) return 'zh';
+  if(raw.startsWith('fr')) return 'fr';
+  if(raw.startsWith('es')) return 'es';
+  return 'en';
+}
+
+function setLang(l,revealNow=true){
+  const allowed=['en','zh','fr','es'];
+  if(!allowed.includes(l)) l='en';
+  cl=l;
+  document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  const f=document.getElementById('fortune');
+  f.classList.toggle('cjk',l==='zh');
+  last=-1;
+  if(revealNow) reveal();
+}
+
+function reveal(e){
+  if (isTransitioning) return;
+  isTransitioning = true;
+
+  const f = document.getElementById('fortune');
+  const n = document.getElementById('nums');
+  const isClick = !!e;
+
+  // Use the same gentle timing as the initial load (zen, not “instant”)
+  const OUT_MS = isClick ? 650 : 450;   // fade out duration
+  const IN_MS_F = 1000;                // fortune fade in duration
+  const IN_MS_N = 1340;                // nums fade in duration (matches CSS default feel)
+  const SWAP_GAP_MS = isClick ? 120 : 0;
+
+  // Ensure transitions are sane (don’t use the 10.8s/14.4s click durations)
+  f.style.transitionDuration = `${OUT_MS}ms, ${OUT_MS}ms`;
+  n.style.transitionDuration = `${OUT_MS}ms`;
+
+  // Phase A: fade out
+  f.classList.remove('v');
+  n.classList.remove('v');
+  f.classList.toggle('cjk',cl==='zh');
+
+  // Force reflow so the browser commits the fade-out before we continue
+  void f.offsetWidth;
+  void n.offsetWidth;
+
+  pickVisual();
+
+  setTimeout(() => {
+    // Phase B: swap content AFTER fade-out is done
+    const p = F[cl] || F.en;
+
+    // ---- SHUFFLE BAG ----
+    // Guarantees every fortune is seen exactly once before any repeats.
+    // Maintains a separate bag per language. Reshuffles when exhausted.
+    if (!window._bags) window._bags = {};
+    if (!window._bags[cl] || window._bags[cl].length === 0) {
+      // Build a new shuffled index array (Fisher-Yates)
+      const arr = Array.from({length: p.length}, (_, i) => i);
+      for (let j = arr.length - 1; j > 0; j--) {
+        const k = Math.floor(Math.random() * (j + 1));
+        [arr[j], arr[k]] = [arr[k], arr[j]];
+      }
+      // If the first item of the new bag is the same as the last shown, swap it deeper
+      if (arr[0] === last && arr.length > 1) {
+        const swap = 1 + Math.floor(Math.random() * (arr.length - 1));
+        [arr[0], arr[swap]] = [arr[swap], arr[0]];
+      }
+      window._bags[cl] = arr;
+    }
+    const i = window._bags[cl].shift();
+    last = i;
+
+    f.textContent = p[i];
+
+    const nm = [];
+    while (nm.length < 6) {
+      const x = Math.floor(Math.random() * 49) + 1;
+      if (!nm.includes(x)) nm.push(x);
+    }
+    n.textContent = nm.join('   ');
+
+    // Set fade-in durations (match launch vibe)
+    f.style.transitionDuration = `${IN_MS_F}ms, ${IN_MS_F}ms`;
+    n.style.transitionDuration = `${IN_MS_N}ms`;
+
+    // Force reflow so “fade in” always triggers (prevents instant appearance)
+    void f.offsetWidth;
+    void n.offsetWidth;
+
+    // Phase C: fade in
+    setTimeout(() => {
+      f.classList.add('v');
+      n.classList.add('v');
+
+      document.getElementById('ba').style.transform =
+        `translate(${Math.random()*30-15}px,${Math.random()*20-10}px)`;
+      document.getElementById('bb').style.transform =
+        `translate(${Math.random()*30-15}px,${Math.random()*20-10}px)`;
+
+      // unlock after fade-in has clearly started
+      setTimeout(() => { isTransitioning = false; }, 300);
+    }, SWAP_GAP_MS);
+
+  }, OUT_MS + SWAP_GAP_MS);
+}
+
+window.addEventListener('load',()=>{
+  initTheme();
+  const buildEl=document.createElement("div");
+  buildEl.className="build-indicator";
+  buildEl.textContent=BUILD;
+  document.body.appendChild(buildEl);
+  const toggle=document.getElementById('themeToggle');
+  if(toggle) toggle.addEventListener('click',toggleTheme);
+  setLang(resolveDeviceLang(),false);
+  setTimeout(reveal,180);
+  setTimeout(()=>positionCookie(true),220);
+  setInterval(()=>reveal({auto:true}),120000);
+});
+
+window.addEventListener('resize',()=>positionCookie(true));
+</script>
+</body>
+</html>
