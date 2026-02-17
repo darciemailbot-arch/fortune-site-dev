@@ -352,7 +352,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.31";
+const BUILD = "dev-0.1.32";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache';
@@ -393,8 +393,14 @@ function createPalette(bg,text){
 }
 
 const PALETTES = [
-  createPalette('#1D2545','#E8DFC5'), // A: Navy/Cream (existing)
-  createPalette('#013220','#FDFBD4')  // B: Forest/Cream
+  {
+    dark: createPalette('#1D2545','#E8DFC5'), // A dark: Navy/Cream
+    light: createPalette('#F5F1E6','#1D2545') // A light: Cream/Navy
+  },
+  {
+    dark: createPalette('#013220','#FDFBD4'), // B dark: Forest/Cream
+    light: createPalette('#FDFBD4','#013220') // B light: Cream/Forest
+  }
 ];
 
 function safeGetLS(key){
@@ -453,13 +459,15 @@ function resolvePaletteSession(){
   return session;
 }
 
-function currentPalette(){
+function currentPalette(theme='dark'){
   if(!paletteSession) paletteSession = resolvePaletteSession();
-  return PALETTES[paletteSession.paletteIndex] || PALETTES[0];
+  const family = PALETTES[paletteSession.paletteIndex] || PALETTES[0];
+  if(!family || typeof family !== 'object') return createPalette('#1D2545','#E8DFC5');
+  return theme === 'dark' ? (family.dark || family.light) : (family.light || family.dark);
 }
 
-function applyPalette(){
-  const p = currentPalette();
+function applyPalette(theme='dark'){
+  const p = currentPalette(theme);
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--bg-primary', p.bg);
   rootStyle.setProperty('--text-primary', p.text);
@@ -490,7 +498,7 @@ function updateVizIntensityCache(theme) {
 }
 
 function applyTheme(theme) {
-  const palette = applyPalette();
+  const palette = applyPalette(theme);
   document.body.setAttribute('data-theme', theme);
   document.documentElement.style.setProperty('--vizIntensity', theme === 'dark' ? 'var(--vizDark)' : 'var(--vizLight)');
   updateVizIntensityCache(theme);
