@@ -231,22 +231,62 @@
     left:0;
     top:0;
     width:var(--sw,42px);
-    height:calc(2px * var(--vizIntensity));
-    border-radius:calc(2px * var(--vizIntensity));
-    background:currentColor;
-    opacity:0;
+    height:calc(6px * var(--vizIntensity));
+    opacity:1;
     transform:translate(var(--sx,0),var(--sy,0)) rotate(var(--sa,22deg));
     transform-origin:left center;
-    animation:star-shoot var(--sdur,2200ms) ease-in-out forwards;
+    animation:star-shoot-motion var(--sdur,2200ms) ease-in-out forwards;
+  }
+  .shooting-star-tail{
+    position:absolute;
+    left:0;
+    top:50%;
+    width:100%;
+    height:calc(2px * var(--vizIntensity));
+    border-radius:calc(2px * var(--vizIntensity));
+    transform:translateY(-50%);
+    transform-origin:right center;
+    background:linear-gradient(90deg,transparent 0%,currentColor 72%,currentColor 100%);
+    opacity:0;
+    animation:
+      star-tail-flight var(--sdur,2200ms) linear forwards,
+      star-tail-burn var(--slinger,420ms) ease-out var(--sdur,2200ms) forwards;
+  }
+  .shooting-star-head{
+    position:absolute;
+    right:calc(-1px * var(--vizIntensity));
+    top:50%;
+    width:calc(4px * var(--vizIntensity));
+    height:calc(4px * var(--vizIntensity));
+    border-radius:50%;
+    background:currentColor;
+    transform:translateY(-50%);
+    opacity:0;
+    animation:star-head-life var(--sdur,2200ms) ease-out forwards;
   }
   @keyframes stars-in{from{opacity:0}to{opacity:1}}
   @keyframes star-breathe{from{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--so,.08)))}to{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),var(--sp,.2)))}}
-  @keyframes star-shoot{
-    0%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scaleX(.3)}
-    10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.16 * var(--vizIntensity))))}
-    40%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.12 * var(--vizIntensity))));transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa)) scaleX(1)}
-    80%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.06 * var(--vizIntensity))));transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scaleX(.7)}
-    100%{opacity:0;transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa)) scaleX(.2)}
+  @keyframes star-shoot-motion{
+    0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa))}
+    40%{transform:translate(calc(var(--sx) + var(--dx)*.5),calc(var(--sy) + var(--dy)*.5)) rotate(var(--sa))}
+    80%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa))}
+    100%{transform:translate(calc(var(--sx) + var(--dx)*1.15),calc(var(--sy) + var(--dy)*1.15)) rotate(var(--sa))}
+  }
+  @keyframes star-head-life{
+    0%{opacity:0}
+    10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.18 * var(--vizIntensity))))}
+    78%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.16 * var(--vizIntensity))))}
+    100%{opacity:0}
+  }
+  @keyframes star-tail-flight{
+    0%{opacity:0}
+    10%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.14 * var(--vizIntensity))))}
+    65%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.11 * var(--vizIntensity))))}
+    100%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.09 * var(--vizIntensity))))}
+  }
+  @keyframes star-tail-burn{
+    0%{transform:translateY(-50%) scaleX(1);opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.09 * var(--vizIntensity))))}
+    100%{transform:translateY(-50%) scaleX(0);opacity:0}
   }
 
   /* Sand */
@@ -320,7 +360,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.12";
+const BUILD = "dev-0.1.13";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -968,6 +1008,7 @@ function startStars() {
 
     const len=50+Math.random()*60;
     let dur=1800+Math.random()*1200;
+    const linger=300+Math.random()*300;
     const ang=16+Math.random()*18;
     const dx=80+Math.random()*120;
     const dy=25+Math.random()*55;
@@ -1001,13 +1042,15 @@ function startStars() {
     shot.style.setProperty('--dy',smoothDY.toFixed(1)+'px');
     shot.style.setProperty('--sa',smoothAng.toFixed(1)+'deg');
     shot.style.setProperty('--sdur',dur.toFixed(0)+'ms');
+    shot.style.setProperty('--slinger',linger.toFixed(0)+'ms');
+    shot.innerHTML='<span class="shooting-star-tail"></span><span class="shooting-star-head"></span>';
     layer.appendChild(shot);
     applySpawnFade(shot);
 
     const tRm=setTimeout(()=>{
       if(shot.isConnected) shot.remove();
       shootingActive=false;
-    },dur+500);
+    },dur+linger+500);
     visTimers.push(tRm);
   };
 
