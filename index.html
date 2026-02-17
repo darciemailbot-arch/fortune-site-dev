@@ -361,7 +361,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.30";
+const BUILD = "dev-0.2.31";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v7';
@@ -772,7 +772,7 @@ function startActiveVisual() {
 function spawnQuickVisualSeed() {
   clearVisuals();
   armFastSpawnWindow(3000);
-  const launchTypes=['koi','blossom','feather','seeds','spirals','brush','birds','bee','sand'];
+  const launchTypes=['koi','blossom','seeds','brush','stars','birds'];
   activeVisual=launchTypes[Math.floor(Math.random()*launchTypes.length)];
   window.__BOOTSTRAP_VIZ_BOOST = Math.max(1.25, Number(window.__BOOTSTRAP_VIZ_BOOST) || 1);
   setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },700);
@@ -1905,14 +1905,14 @@ function pickVisual() {
   clearVisuals();
   if(bootstrapFirstVisualPending){
     bootstrapFirstVisualPending=false;
-    const launchTypes=['koi','blossom','feather','seeds','spirals','brush','birds','bee','sand'];
+    const launchTypes=['koi','blossom','seeds','brush','stars','birds'];
     activeVisual=launchTypes[Math.floor(Math.random()*launchTypes.length)];
     window.__BOOTSTRAP_VIZ_BOOST = 1.35;
     setTimeout(()=>{ window.__BOOTSTRAP_VIZ_BOOST = 1; },800);
     startActiveVisual();
     return
   }
-  const types=['koi','blossom','feather','seeds','spirals','brush','stars','birds','bee','sand'];
+  const types=['koi','blossom','seeds','brush','stars','birds'];
   const choices=activeVisual ? types.filter(t=>t!==activeVisual) : types.slice();
   activeVisual=choices[Math.floor(Math.random()*choices.length)];
   startActiveVisual();
