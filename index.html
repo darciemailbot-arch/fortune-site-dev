@@ -190,20 +190,9 @@
     to{opacity:0}
   }
 
-  /* Brushstroke */
-  .brush{position:absolute;opacity:0;animation:brush-drift linear forwards}
-  .brush svg{width:100%;height:100%}
-  .brush svg path{stroke-linecap:round;fill:none}
-  .brush .br{fill:none;stroke:var(--red);stroke-linecap:round;stroke-linejoin:round}
-  @keyframes brush-sweep{0%{stroke-dashoffset:120;opacity:0}15%{opacity:calc(.10 * var(--vizIntensity))}50%{stroke-dashoffset:0;opacity:calc(.07 * var(--vizIntensity))}85%{opacity:calc(.10 * var(--vizIntensity))}100%{stroke-dashoffset:-120;opacity:0}}
-  @keyframes brush-drift{
-    0%{opacity:0;transform:translateX(0) translateY(0) rotate(0deg)}
-    12%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.2 * var(--vizIntensity))))}
-    25%{transform:translateX(var(--mx1)) translateY(var(--my1)) rotate(var(--r1))}
-    50%{opacity:calc(var(--spawnFade,1) * max(var(--vizFloor),calc(.18 * var(--vizIntensity))));transform:translateX(var(--mx2)) translateY(var(--my2)) rotate(var(--r2))}
-    75%{transform:translateX(var(--mx3)) translateY(var(--my3)) rotate(var(--r3))}
-    100%{opacity:0;transform:translateX(var(--tx)) translateY(var(--ty)) rotate(var(--r4))}
-  }
+  /* Ocean Waves (brush visual slot) */
+  .brush{position:absolute;inset:0;pointer-events:none;opacity:0;animation:sand-in 1200ms ease forwards}
+  .brush canvas{width:100%;height:100%;display:block}
 
   /* Stars (diamond variation, restrained) */
   .stars{position:absolute;inset:0;pointer-events:none;opacity:0;animation:stars-in 1.2s ease forwards;color:color-mix(in srgb,var(--red) 90%,#b89091 10%)}
@@ -352,7 +341,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.1.17";
+const BUILD = "dev-0.1.18";
 const THEME_KEY = 'fortuneTheme';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 let vizIntensityNum = 1;
@@ -2263,59 +2252,165 @@ function startFeathers() {
   visTimers.push(iv);
 }
 
-// ======== BRUSHSTROKE ========
+// ======== OCEAN WAVES (BRUSH SLOT) ========
 function spawnBrush() {
-  const b=document.createElement('div');b.className='brush';
-  b.spawnTime=performance.now();
-  b.style.setProperty('--spawnFade','0');
-  const vw=window.innerWidth,vh=window.innerHeight;
-  const w=80+Math.random()*120;
-  const h=22+Math.random()*16;
-  const fromLeft=Math.random()>.5;
-  const x=fromLeft?(-w-16):(vw+16);
-  const y=10+Math.random()*(vh*0.75);
-  const tx=(fromLeft?1:-1)*(40+Math.random()*(vw*0.55));
-  const ty=(-70+Math.random()*140);
-  const dur=24+Math.random()*20;
-  const mx1=tx*0.25+(-28+Math.random()*56);
-  const mx2=tx*0.52+(-36+Math.random()*72);
-  const mx3=tx*0.78+(-24+Math.random()*48);
-  const my1=ty*0.25+(-28+Math.random()*56);
-  const my2=ty*0.52+(-34+Math.random()*68);
-  const my3=ty*0.78+(-24+Math.random()*48);
-  const r1=(-18+Math.random()*36).toFixed(1)+'deg';
-  const r2=(-24+Math.random()*48).toFixed(1)+'deg';
-  const r3=(-18+Math.random()*36).toFixed(1)+'deg';
-  const r4=(-10+Math.random()*20).toFixed(1)+'deg';
-  b.style.width=w+'px';b.style.height=h+'px';
-  b.style.left=x+'px';b.style.top=y+'px';
-  b.style.setProperty('--tx',tx+'px');
-  b.style.setProperty('--ty',ty+'px');
-  b.style.setProperty('--mx1',mx1+'px');
-  b.style.setProperty('--my1',my1+'px');
-  b.style.setProperty('--mx2',mx2+'px');
-  b.style.setProperty('--my2',my2+'px');
-  b.style.setProperty('--mx3',mx3+'px');
-  b.style.setProperty('--my3',my3+'px');
-  b.style.setProperty('--r1',r1);
-  b.style.setProperty('--r2',r2);
-  b.style.setProperty('--r3',r3);
-  b.style.setProperty('--r4',r4);
-  b.style.animationDuration=dur+'s';
-  const lines=2+Math.floor(Math.random()*3); // 2-4 parallel wave lines
-  const sw=vizWidth(1.7);
-  const color='var(--red)';
-  const sweepDur=(12+Math.random()*10).toFixed(1);
-  const sweepDelay=(Math.random()*3).toFixed(1);
-  b.innerHTML='<svg viewBox="0 0 100 24">'+Array.from({length:lines}).map((_,i)=>{const offset=6+i*6+(Math.random()*2-1)*2;const amp=4+Math.random()*3;const path=`M2 ${offset.toFixed(2)} C 18 ${(offset-amp).toFixed(2)}, 34 ${(offset+amp).toFixed(2)}, 50 ${offset.toFixed(2)} C 66 ${(offset-amp).toFixed(2)}, 82 ${(offset+amp).toFixed(2)}, 98 ${offset.toFixed(2)}`;const opacity=vizAlpha(Math.max(0.06,0.12-i*0.02));return '<path class="br" d="'+path+'" stroke="'+color+'" stroke-width="'+sw.toFixed(3)+'" stroke-dasharray="120" opacity="'+opacity.toFixed(3)+'" style="animation:brush-sweep '+sweepDur+'s ease-in-out infinite;animation-delay:'+sweepDelay+'s;"/>';}).join('')+'</svg>';
-  VIS.appendChild(b);
-  applySpawnFade(b);
-  setTimeout(()=>fadeOutAndRemove(b,900),(dur+1)*1e3);
+  if(activeVisual!=='brush') return null;
+  const existing=VIS.querySelector('.brush');
+  if(existing) return existing;
+
+  const layer=document.createElement('div');
+  layer.className='brush';
+  layer.spawnTime=performance.now();
+  layer.style.setProperty('--spawnFade','0');
+  const canvas=document.createElement('canvas');
+  layer.appendChild(canvas);
+  VIS.appendChild(layer);
+  applySpawnFade(layer);
+
+  let ctx=setupCanvas(canvas);
+  let rect=canvas.getBoundingClientRect();
+  let w=Math.max(1,rect.width), h=Math.max(1,rect.height);
+  const lineCount=3+Math.floor(Math.random()*5); // 3-7 lines
+  const dir=Math.random()>.5 ? 1 : -1;
+  let raf=0, lastNow=performance.now();
+  let safeRect=getSandReadZone(w,h,38);
+
+  const waves=Array.from({length:lineCount}).map((_,i)=>{
+    const t=lineCount===1?0.5:(i/(lineCount-1));
+    const yNorm=0.14+t*0.72+(-0.02+Math.random()*0.04);
+    const wavelength=180+Math.random()*160;
+    const cyclesPer10=0.9+Math.random()*0.7;
+    return {
+      yNorm,
+      amp:8+Math.random()*10,
+      wavelength,
+      phase:Math.random()*Math.PI*2,
+      speedPxPerSec:(wavelength*cyclesPer10)/10,
+      stepPx:0,
+      thickness:1.2+Math.random()*1.0,
+      opacity:0.06+Math.random()*0.08,
+      parallaxAmp:1.2+Math.random()*4.2,
+      parallaxRate:0.00022+Math.random()*0.00028,
+      capThreshold:0.82+Math.random()*0.10,
+      capPhase:Math.random()*Math.PI*2,
+      capRate:0.0010+Math.random()*0.0009
+    };
+  });
+
+  const refreshLayout=()=>{
+    ctx=setupCanvas(canvas);
+    rect=canvas.getBoundingClientRect();
+    w=Math.max(1,rect.width);
+    h=Math.max(1,rect.height);
+    safeRect=getSandReadZone(w,h,38);
+  };
+
+  const beginReadZoneClip=()=>{
+    if(!safeRect || !(safeRect.w>0 && safeRect.h>0)) return false;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0,0,w,h);
+    ctx.rect(safeRect.x,safeRect.y,safeRect.w,safeRect.h);
+    ctx.clip('evenodd');
+    return true;
+  };
+
+  const draw=(now)=>{
+    if(activeVisual!=='brush' || !layer.isConnected) return;
+    if(document.hidden){ raf=requestAnimationFrame(draw); return; }
+    const dt=Math.min(0.05,Math.max(0.001,(now-lastNow)/1000));
+    lastNow=now;
+    const fadeIn=spawnFadeMultiplier(layer.spawnTime);
+
+    ctx.clearRect(0,0,w,h);
+    const c=getComputedStyle(document.body).getPropertyValue('--red').trim() || '#9a1f22';
+    ctx.strokeStyle=c;
+    const clipped=beginReadZoneClip();
+
+    for(const wave of waves){
+      const targetStep=wave.speedPxPerSec*dt*dir;
+      wave.stepPx=smoothStep(wave.stepPx,targetStep,0.08);
+      let stepPx=wave.stepPx;
+      [stepPx]=clampMagnitude(stepPx,0,TRANQUIL_SPEED*3);
+      wave.phase += (stepPx/wave.wavelength)*Math.PI*2;
+
+      const yBase=h*wave.yNorm;
+      const yParallax=Math.sin(now*wave.parallaxRate+wave.capPhase)*wave.parallaxAmp;
+      const mainAlpha=vizAlpha(wave.opacity*fadeIn);
+      if(mainAlpha<=0.0001) continue;
+
+      ctx.globalAlpha=mainAlpha;
+      ctx.lineWidth=vizWidth(wave.thickness);
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      let first=true;
+      for(let x=-84;x<=w+84;x+=14){
+        const t1=((x/wave.wavelength)*Math.PI*2)+wave.phase;
+        const s1=Math.sin(t1);
+        const s2=Math.sin((x/(wave.wavelength*0.55))*Math.PI*2 + wave.phase*1.6);
+        const y=yBase+(s1*wave.amp)+(s2*(wave.amp*0.18))+yParallax;
+        if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+
+      ctx.lineWidth=vizWidth(Math.max(0.9,wave.thickness*0.84));
+      ctx.setLineDash([2,6]);
+      for(let x=-64;x<=w+64;x+=16){
+        const t1=((x/wave.wavelength)*Math.PI*2)+wave.phase;
+        const s1=Math.sin(t1);
+        const c1=Math.cos(t1);
+        if(s1<=wave.capThreshold || Math.abs(c1)>0.36) continue;
+        const pulse=0.5+0.5*Math.sin(now*wave.capRate + (x/wave.wavelength)*5 + wave.capPhase);
+        const capAlpha=vizAlpha(Math.min(0.22,wave.opacity*1.8)*fadeIn*Math.max(0,pulse));
+        if(capAlpha<=0.001) continue;
+        const s2=Math.sin((x/(wave.wavelength*0.55))*Math.PI*2 + wave.phase*1.6);
+        const y=yBase+(s1*wave.amp)+(s2*(wave.amp*0.18))+yParallax-0.25;
+        const len=18+((s1-wave.capThreshold)/(1-wave.capThreshold))*30;
+        ctx.globalAlpha=capAlpha;
+        ctx.beginPath();
+        ctx.moveTo(x-len*0.5,y);
+        ctx.lineTo(x+len*0.5,y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    ctx.globalAlpha=1;
+    if(clipped) ctx.restore();
+    raf=requestAnimationFrame(draw);
+  };
+
+  const onResize=()=>refreshLayout();
+  const onOrientation=()=>refreshLayout();
+  const onFortune=()=>{ safeRect=getSandReadZone(w,h,38); };
+  const onTheme=()=>{ safeRect=getSandReadZone(w,h,38); };
+  window.addEventListener('resize',onResize,{passive:true});
+  window.addEventListener('orientationchange',onOrientation,{passive:true});
+  window.addEventListener('fortune-rendered',onFortune);
+  window.addEventListener('theme-changed',onTheme);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=>{ if(activeVisual==='brush') onFortune(); }).catch(()=>{});
+  }
+
+  layer._stop=()=>{
+    if(raf) cancelAnimationFrame(raf);
+    window.removeEventListener('resize',onResize);
+    window.removeEventListener('orientationchange',onOrientation);
+    window.removeEventListener('fortune-rendered',onFortune);
+    window.removeEventListener('theme-changed',onTheme);
+  };
+
+  raf=requestAnimationFrame(draw);
+  return layer;
 }
 function startBrush() {
-  const initialMax=Math.min(V.brush.initial,adjustedVisualMax(V.brush.max));
-  for(let i=0;i<initialMax;i++) visTimers.push(setTimeout(spawnBrush,jitter(300+Math.random()*2500)));
-  const iv=setInterval(()=>{if(activeVisual!=='brush'){clearInterval(iv);return;}if(VIS.querySelectorAll('.brush').length<adjustedVisualMax(V.brush.max))spawnBrush();},jitter(5000+Math.random()*3000));
+  spawnBrush();
+  const iv=setInterval(()=>{
+    if(activeVisual!=='brush'){clearInterval(iv);return;}
+    if(!VIS.querySelector('.brush')) spawnBrush();
+  },jitter(5000+Math.random()*3000));
   visTimers.push(iv);
 }
 
