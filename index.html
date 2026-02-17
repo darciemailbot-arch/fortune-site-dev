@@ -359,7 +359,7 @@
 
 <script>
 const VIS = document.getElementById('vis');
-const BUILD = "dev-0.2.16";
+const BUILD = "dev-0.2.17";
 const THEME_KEY = 'fortuneTheme';
 const PALETTE_SALT_KEY = 'paletteSalt';
 const PALETTE_CACHE_KEY = 'paletteCache_v5';
@@ -2655,6 +2655,7 @@ function spawnBrush() {
   const dir=Math.random()>.5 ? 1 : -1;
   let raf=0, lastNow=performance.now();
   let safeRects=getBrushProtectedRects(w,h);
+  let lastSafeRefresh=0;
 
   const waves=Array.from({length:lineCount}).map((_,i)=>{
     const t=lineCount===1?0.5:(i/(lineCount-1));
@@ -2698,10 +2699,28 @@ function spawnBrush() {
     ctx.clip('evenodd');
     return true;
   };
+  const punchOutProtectedRects=()=>{
+    if(!safeRects || !safeRects.length) return;
+    ctx.save();
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle='rgba(0,0,0,1)';
+    ctx.beginPath();
+    for(const r of safeRects){
+      if(r.w<=0 || r.h<=0) continue;
+      const rad=Math.min(22,Math.max(10,Math.min(r.w,r.h)*0.25));
+      roundedRectPath(ctx,r.x,r.y,r.w,r.h,rad);
+    }
+    ctx.fill();
+    ctx.restore();
+  };
 
   const draw=(now)=>{
     if(activeVisual!=='brush' || !layer.isConnected) return;
     if(document.hidden){ raf=requestAnimationFrame(draw); return; }
+    if((now-lastSafeRefresh)>240){
+      safeRects=getBrushProtectedRects(w,h);
+      lastSafeRefresh=now;
+    }
     const dt=Math.min(0.05,Math.max(0.001,(now-lastNow)/1000));
     lastNow=now;
     const fadeIn=spawnFadeMultiplier(layer.spawnTime);
@@ -2763,6 +2782,7 @@ function spawnBrush() {
 
     ctx.globalAlpha=1;
     if(clipped) ctx.restore();
+    punchOutProtectedRects();
     raf=requestAnimationFrame(draw);
   };
 
